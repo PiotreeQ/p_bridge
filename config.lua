@@ -4,7 +4,7 @@ Config = {} -- [dont change this]
 Config.Debug = false 
 
 --@param Config.Language: string [this will change language in all our scripts which use this bridge]
-Config.Language = 'en' -- [en, pl, fr, de, es, it, pt, ru, zh]
+Config.Language = 'en' -- [en, pl, fr, de, es, it, tr, ru]
 -- open ticket on our discord if you want to add your language [discord.gg/piotreqscripts]
 
 --@param Config.Framework: string [set which framework you are using]

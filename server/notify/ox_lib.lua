@@ -12,8 +12,8 @@ end
 
 Bridge.Notify = {}
 
-Bridge.Notify.showNotify = function(message, type)
-    TriggerClientEvent('ox_lib:notify', source, {
+Bridge.Notify.showNotify = function(playerId, message, type)
+    TriggerClientEvent('ox_lib:notify', playerId, {
         description = message,
         type = type or 'inform',
     })
