@@ -8,3 +8,5 @@ function checkResource(resourceName)
 end
 
 exports('getObject', function() return Bridge end)
+
+lib.versionCheck('PiotreeQ/p_bridge')
