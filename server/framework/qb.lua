@@ -1,4 +1,4 @@
-if (Config.Framework == 'auto' and not checkResource('qb-core') and not checkResource('qbx_core')) or (Config.Framework ~= 'auto' and Config.Framework ~= 'qbcore') then
+if (Config.Framework == 'auto' and not checkResource('qb-core') and not checkResource('qbx_core')) or (Config.Framework ~= 'auto' and Config.Framework ~= 'qb') then
     return
 end
 
