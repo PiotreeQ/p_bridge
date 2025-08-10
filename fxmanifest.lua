@@ -9,6 +9,7 @@ client_scripts {
     'client/main.lua',
     'client/utils.lua',
     'client/cache.lua',
+    'client/marker.lua',
     'client/appearance/*.lua',
     'client/carkeys/*.lua',
     'client/framework/*.lua',
