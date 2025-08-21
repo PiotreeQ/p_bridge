@@ -164,3 +164,34 @@ Bridge.Framework.checkPlayerLicense = function(playerId, license)
     return row and true or false
 end
 
+--@param playerId: number|string [existing player id or unique identifier]
+--@param license: string [license type, e.g., 'driver', 'weapon']
+--@return boolean [true if license has been added, false if not]
+Bridge.Framework.addPlayerLicense = function(playerId, license)
+    local xPlayer = type(playerId) == 'number' and ESX.GetPlayerFromId(playerId) or ESX.GetPlayerFromIdentifier(playerId)
+    if not xPlayer then
+        lib.print.error(('No player found with ID: %s\nInvoker: %s'):format(playerId, GetInvokingResource() or GetCurrentResourceName()))
+        return false
+    end
+
+    MySQL.insert.await('INSERT INTO user_licenses (owner, type) VALUES (?, ?)', {xPlayer.identifier, license})
+    return true
+end
+
+--@param playerId: number|string [existing player id or unique identifier]
+--@param requiredGroups: table [list of required groups]
+Bridge.Framework.checkPermissions = function(playerId, requiredGroups)
+    local xPlayer = type(playerId) == 'number' and ESX.GetPlayerFromId(playerId) or ESX.GetPlayerFromIdentifier(playerId)
+    if not xPlayer then
+        lib.print.error(('No player found with ID: %s\nInvoker: %s'):format(playerId, GetInvokingResource() or GetCurrentResourceName()))
+        return false
+    end
+
+    if requiredGroups[xPlayer.getGroup()] then
+        return true
+    end
+
+    return false
+end
+
+lib.callback.register('p_bridge/server/framework/checkPermissions', Bridge.Framework.checkPermissions)

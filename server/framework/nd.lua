@@ -10,6 +10,8 @@ if Config.Debug then
     lib.print.info('[Framework] Loaded: ND_Core')
 end
 
+-- NOT BEEN ABLE TO TEST IT, CREATE PULL REQUEST IF THERE IS SOME ISSUES :)
+
 RegisterNetEvent('ND:characterLoaded', function(player)
     TriggerEvent('p_bridge/server/playerLoaded', player.source) -- DONT TOUCH IT!
 end)
@@ -196,3 +198,36 @@ Bridge.Framework.checkPlayerLicense = function(playerId, license)
     return false
 end
 
+--@param playerId: number|string [existing player id or unique identifier]
+--@param license: string [license type, e.g., 'driver', 'weapon']
+--@return boolean [true if license has been added, false if not]
+Bridge.Framework.addPlayerLicense = function(playerId, license)
+    local xPlayer = type(playerId) == 'number' and exports["ND_Core"]:getPlayer(playerId) or Bridge.Framework.getPlayerByUniqueId(playerId)
+    if not xPlayer then
+        lib.print.error(('No player found with ID: %s\nInvoker: %s'):format(playerId, GetInvokingResource() or GetCurrentResourceName()))
+        return false
+    end
+
+    player.createLicense(license, os.time() + 99999999)
+    return true
+end
+
+--@param playerId: number|string [existing player id or unique identifier]
+--@param requiredGroups: table [list of required groups]
+Bridge.Framework.checkPermissions = function(playerId, requiredGroups)
+    local xPlayer = type(playerId) == 'number' and exports['qbx_core']:GetPlayer(playerId) or exports['qbx_core']:GetPlayerByCitizenId(playerId)
+    if not xPlayer then
+        lib.print.error(('No player found with ID: %s\nInvoker: %s'):format(playerId, GetInvokingResource() or GetCurrentResourceName()))
+        return false
+    end
+
+    for group, _ in pairs(requiredGroups) do
+        if xPlayer.getGroup(group) then
+            return true
+        end
+    end
+
+    return false
+end
+
+lib.callback.register('p_bridge/server/framework/checkPermissions', Bridge.Framework.checkPermissions)

@@ -10,6 +10,8 @@ if Config.Debug then
     lib.print.info('[Framework] Loaded: OX')
 end
 
+-- NOT BEEN ABLE TO TEST IT, CREATE PULL REQUEST IF THERE IS SOME ISSUES :)
+
 local Ox = require '@ox_core.lib.init'
 
 RegisterNetEvent('ox:playerLoaded', function(playerId)
@@ -175,7 +177,7 @@ end
 --@param license: string [license type, e.g., 'driver', 'weapon']
 --@return boolean [true if player has the license, false otherwise]
 Bridge.Framework.checkPlayerLicense = function(playerId, license)
-     local xPlayer = type(playerId) == 'number' and Ox.GetPlayerFromFilter({ source = playerId }) or Ox.GetPlayerFromFilter({ identifier = uniqueId })
+    local xPlayer = type(playerId) == 'number' and Ox.GetPlayerFromFilter({ source = playerId }) or Ox.GetPlayerFromFilter({ identifier = uniqueId })
     if not xPlayer then
         lib.print.error(('No player found with ID: %s\nInvoker: %s'):format(playerId, GetInvokingResource() or GetCurrentResourceName()))
         return false
@@ -183,4 +185,38 @@ Bridge.Framework.checkPlayerLicense = function(playerId, license)
 
     return xPlayer.getLicense(license)
 end
+
+--@param playerId: number|string [existing player id or unique identifier]
+--@param license: string [license type, e.g., 'driver', 'weapon']
+--@return boolean [true if license has been added, false if not]
+Bridge.Framework.addPlayerLicense = function(playerId, license)
+    local xPlayer = type(playerId) == 'number' and Ox.GetPlayerFromFilter({ source = playerId }) or Ox.GetPlayerFromFilter({ identifier = uniqueId })
+    if not xPlayer then
+        lib.print.error(('No player found with ID: %s\nInvoker: %s'):format(playerId, GetInvokingResource() or GetCurrentResourceName()))
+        return false
+    end
+
+    xPlayer.addLicense(license)
+    return true
+end
+
+--@param playerId: number|string [existing player id or unique identifier]
+--@param requiredGroups: table [list of required groups]
+Bridge.Framework.checkPermissions = function(playerId, requiredGroups)
+    local xPlayer = type(playerId) == 'number' and Ox.GetPlayerFromFilter({ source = playerId }) or Ox.GetPlayerFromFilter({ identifier = uniqueId })
+    if not xPlayer then
+        lib.print.error(('No player found with ID: %s\nInvoker: %s'):format(playerId, GetInvokingResource() or GetCurrentResourceName()))
+        return false
+    end
+
+    for group, _ in pairs(requiredGroups) do
+        if xPlayer.getGroup(group) then
+            return true
+        end
+    end
+
+    return false
+end
+
+lib.callback.register('p_bridge/server/framework/checkPermissions', Bridge.Framework.checkPermissions)
 

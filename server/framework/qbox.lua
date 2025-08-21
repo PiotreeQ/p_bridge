@@ -175,3 +175,36 @@ Bridge.Framework.checkPlayerLicense = function(playerId, license)
     return xPlayer.PlayerData.metadata.licences[license] or false
 end
 
+--@param playerId: number|string [existing player id or unique identifier]
+--@param license: string [license type, e.g., 'driver', 'weapon']
+--@return boolean [true if license has been added, false if not]
+Bridge.Framework.addPlayerLicense = function(playerId, license)
+    local xPlayer = type(playerId) == 'number' and exports['qbx_core']:GetPlayer(playerId) or exports['qbx_core']:GetPlayerByCitizenId(playerId)
+    if not xPlayer then
+        lib.print.error(('No player found with ID: %s\nInvoker: %s'):format(playerId, GetInvokingResource() or GetCurrentResourceName()))
+        return false
+    end
+
+    xPlayer.PlayerData.metadata.licences[license] = true
+    return true
+end
+
+--@param playerId: number|string [existing player id or unique identifier]
+--@param requiredGroups: table [list of required groups]
+Bridge.Framework.checkPermissions = function(playerId, requiredGroups)
+    local xPlayer = type(playerId) == 'number' and exports['qbx_core']:GetPlayer(playerId) or exports['qbx_core']:GetPlayerByCitizenId(playerId)
+    if not xPlayer then
+        lib.print.error(('No player found with ID: %s\nInvoker: %s'):format(playerId, GetInvokingResource() or GetCurrentResourceName()))
+        return false
+    end
+
+    for group, _ in pairs(requiredGroups) do
+        if QBCore.Functions.HasPermission(playerId, group) then
+            return true
+        end
+    end
+
+    return false
+end
+
+lib.callback.register('p_bridge/server/framework/checkPermissions', Bridge.Framework.checkPermissions)
