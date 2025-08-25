@@ -188,6 +188,7 @@ Bridge.Framework.addPlayerLicense = function(playerId, license)
     end
 
     xPlayer.PlayerData.metadata.licences[license] = true
+    xPlayer.Functions.SetMetaData('licences', xPlayer.PlayerData.metadata.licences)
     return true
 end
 

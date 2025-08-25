@@ -26,7 +26,7 @@ Config.Target = 'auto'
 --[[
     auto - will try to detect target system automatically
     qb-target - QBCore Target
-    ox_target - ox_lib Target [recommended]
+    ox_target - OX Target [recommended]
     standalone - Standalone (no target, script will try to use markers, doesnt work everytime!)
 
     -- open ticket on our discord if you want to add your target system [discord.gg/piotreqscripts]
