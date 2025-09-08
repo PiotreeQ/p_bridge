@@ -71,6 +71,23 @@ Bridge.Framework.getPlayerByUniqueId = function(uniqueId)
 end
 
 --@param playerId: number|string [existing player id or unique identifier]
+--@return uniqueId: string [example 'char1:123456', for esx it will be identifier, for qb/qbox it will be citizenid]
+Bridge.Framework.getUniqueId = function(playerId)
+    if not playerId then
+        lib.print.error('Player ID is required to fetch unique ID.')
+        return nil
+    end
+
+    local xPlayer = type(playerId) == 'number' and exports['qbx_core']:GetPlayer(playerId) or exports['qbx_core']:GetPlayerByCitizenId(playerId)
+    if not xPlayer then
+        lib.print.error(('No player found with ID: %s\nInvoker: %s'):format(playerId, GetInvokingResource() or GetCurrentResourceName()))
+        return nil
+    end
+
+    return xPlayer.PlayerData.citizenid
+end
+
+--@param playerId: number|string [existing player id or unique identifier]
 --@return { name: string, label: string, grade: number, grade_name: string, grade_label: string }
 -- If playerId is a number, it fetches by ID; if it's a string, it fetches by identifier
 Bridge.Framework.getPlayerJob = function(playerId)

@@ -88,6 +88,7 @@ Config.CarKeys = 'auto'
     wasabi_carlock - Wasabi Car Lock
     qs-vehiclekeys - QS Vehicle Keys
     tgiann-hotwire - Tgiann Hotwire
+    MrNewbVehicleKeys - MrNewb Vehicle Keys
     none - no car keys system
 
     -- open ticket on our discord if you want to add your car keys system [discord.gg/piotreqscripts]
@@ -105,4 +106,15 @@ Config.Dispatch = 'auto'
     lb-tablet - LB-Tablet Dispatch
 
     -- open ticket on our discord if you want to add your dispatch system [discord.gg/piotreqscripts]
+]]
+
+--@param Config.ProgressBar: string [set which progress bar system you are using]
+Config.ProgressBar = 'auto'
+--[[
+    auto - will try to detect progress bar system automatically
+    ox_lib - ox_lib Progress Bar [recommended]
+    esx - ESX Progress Bar
+    qb - QB Progress Bar
+
+    -- open ticket on our discord if you want to add your progress bar system [discord.gg/piotreqscripts]
 ]]

@@ -81,5 +81,5 @@ end
 
 --@param id: number or string [id of the zone to remove]
 Bridge.Target.removeSphereZone = function(id)
-    exports['ox_target']:removeSphereZone(id)
+    exports['ox_target']:removeZone(id)
 end
