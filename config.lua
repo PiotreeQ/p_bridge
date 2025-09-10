@@ -89,6 +89,8 @@ Config.CarKeys = 'auto'
     qs-vehiclekeys - QS Vehicle Keys
     tgiann-hotwire - Tgiann Hotwire
     MrNewbVehicleKeys - MrNewb Vehicle Keys
+    ak47_vehiclekeys - Ak47 Vehicle Keys
+    ak47_qb_vehiclekeys - Ak47 QBCore Vehicle Keys
     none - no car keys system
 
     -- open ticket on our discord if you want to add your car keys system [discord.gg/piotreqscripts]
