@@ -109,10 +109,10 @@ Bridge.Framework.getPlayerName = function(playerId, separate)
     end
 
     if separate then
-        return xPlayer.firstname, xPlayer.lastname
+        return xPlayer.get('firstName'), xPlayer.get('lastName')
     end
 
-    return ('%s %s'):format(xPlayer.firstname, xPlayer.lastname)
+    return ('%s %s'):format(xPlayer.get('firstName'), xPlayer.get('lastName'))
 end
 
 --@param playerId: number|string [existing player id or unique identifier]
