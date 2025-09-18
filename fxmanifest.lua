@@ -3,7 +3,7 @@ game 'gta5'
 author 'pScripts [tebex.pscripts.store]'
 lua54 'yes'
 description 'pScripts - Official Bridge'
-version '1.0.6'
+version '1.0.7'
 
 client_scripts {
     'client/main.lua',
@@ -24,6 +24,7 @@ server_scripts {
     '@oxmysql/lib/MySQL.lua',
     'server/main.lua',
     'server/debug.lua',
+    'server/logs.lua',
     'server/framework/*.lua',
     'server/inventory/*.lua',
     'server/dispatch/*.lua',

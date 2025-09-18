@@ -18,6 +18,16 @@ Bridge.Target.toggleTarget = function(state)
 end
 
 --@param options: table [options for the target, see ox_target documentation for details]
+Bridge.Target.addGlobal = function(options)
+    exports['ox_target']:addGlobalOption(options)
+end
+
+--@param optionNames: string | string[] [names of the options to remove]
+Bridge.Target.removeGlobal = function(optionNames)
+    exports['ox_target']:removeGlobalOption(optionNames)
+end
+
+--@param options: table [options for the target, see ox_target documentation for details]
 Bridge.Target.addPlayer = function(options)
     exports['ox_target']:addGlobalPlayer(options)
 end

@@ -27,3 +27,7 @@ end
 Bridge.Inventory.getItemSlot = function(playerId, slot)
     return exports['ox_inventory']:GetSlot(playerId, slot)
 end
+
+Bridge.Inventory.createShop = function(shopName, data)
+    exports['ox_inventory']:RegisterShop(shopName, data)
+end

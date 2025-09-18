@@ -3,6 +3,9 @@ Config = {} -- [dont change this]
 --@param Config.Debug: boolean [true = script will print debug messages, display more info etc]
 Config.Debug = false 
 
+--@param Config.Logs: boolean [true = script will send logs to discord webhook, false = no logs]
+Config.Logs = true
+
 --@param Config.Language: string [this will change language in all our scripts which use this bridge]
 Config.Language = 'en' -- [en, pl, fr, de, es, it, tr, ru]
 -- open ticket on our discord if you want to add your language [discord.gg/piotreqscripts]
@@ -91,6 +94,7 @@ Config.CarKeys = 'auto'
     MrNewbVehicleKeys - MrNewb Vehicle Keys
     ak47_vehiclekeys - Ak47 Vehicle Keys
     ak47_qb_vehiclekeys - Ak47 QBCore Vehicle Keys
+    mk_vehiclekeys - MK Vehicle Keys
     none - no car keys system
 
     -- open ticket on our discord if you want to add your car keys system [discord.gg/piotreqscripts]

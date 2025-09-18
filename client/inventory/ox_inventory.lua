@@ -12,11 +12,15 @@ end
 
 Bridge.Inventory = {}
 
+Bridge.Inventory.openInventory = function(invType, data)
+    exports['ox_inventory']:openInventory(invType, data)
+end
+
 Bridge.Inventory.getItemCount = function(itemName)
     return exports['ox_inventory']:Search('count', itemName)
 end
 
 Bridge.Inventory.getItemData = function(itemName)
     local info = exports['ox_inventory']:Items(itemName)
-    return info and {name = itemName, label = info.label, image = ('https://cfx-nui-ox_inventory/web/images/%s.png'):format(itemName)}
+    return info and {name = itemName, label = info.label, description = info.description, image = ('https://cfx-nui-ox_inventory/web/images/%s.png'):format(itemName)}
 end

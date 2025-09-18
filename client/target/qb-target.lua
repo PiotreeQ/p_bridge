@@ -17,6 +17,56 @@ Bridge.Target.toggleTarget = function(state)
     exports['qb-target']:AllowTargeting(state)
 end
 
+--@param options: table [options for the target, see ox_target documentation for details]
+-- qb-target doesn't have export for global option so i used box zone, if u have better solution please contact me on discord :)
+
+local globalOptions = {}
+
+Bridge.Target.addGlobal = function(options)
+    local name = ('p_bridge_global_%s_%s'):format(GetInvokingResource() or GetCurrentResourceName(), tostring(math.random(11111111, 99999999)))
+    for i = 1, #options do
+        if options[i].onSelect then
+            options[i].action = options[i].onSelect
+        end
+        if options[i].groups then
+            options[i].job = options[i].groups
+        end
+        if options[i].items then
+            options[i].item = options[i].items
+        end
+    end
+    globalOptions[name] = true
+    Citizen.CreateThread(function()
+        while globalOptions[name] do
+            if globalOptions[name] then
+                local coords = GetEntityCoords(cache.ped)
+                exports['qb-target']:RemoveZone(name)
+                Citizen.Wait(100)
+                exports['qb-target']:AddBoxZone(name, coords, 1000.0, 1000.0, {
+                    name = name,
+                    heading = 0,
+                    debugPoly = Config.Debug,
+                    minZ = coords.z - 30.0,
+                    maxZ = coords.z + 30.0,
+                }, {
+                    options = options,
+                    distance = options[1]?.distance or 2.0,
+                })
+            end
+            Citizen.Wait(5000)
+        end
+
+        exports['qb-target']:RemoveZone(name)
+    end)
+end
+
+--@param optionNames: string | string[] [names of the options to remove]
+Bridge.Target.removeGlobal = function(optionNames)
+    globalOptions[optionNames] = nil
+    exports['qb-target']:RemoveZone(optionNames)
+end
+
+
 --@param options: table [options for the target, see qb-target documentation for details]
 Bridge.Target.addPlayer = function(options)
     for i = 1, #options do

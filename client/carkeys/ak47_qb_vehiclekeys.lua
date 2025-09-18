@@ -15,10 +15,11 @@ Bridge.CarKeys = {}
 --@param vehiclePlate: string [the plate of the vehicle]
 --@param vehicleEntity: number [the entity ID of the vehicle]
 Bridge.CarKeys.CreateKeys = function(vehiclePlate, vehicleEntity)
-    exports['ak47_qb_vehiclekeys']:GiveKey(vehiclePlate, false)
+    exports['ak47_qb_vehiclekeys']:GiveKey(vehiclePlate, not NetworkGetEntityIsNetworked(vehicleEntity))
 end
 
 --@param vehiclePlate: string [the plate of the vehicle]
-Bridge.CarKeys.RemoveKeys = function(vehiclePlate)
-    exports['ak47_qb_vehiclekeys']:RemoveKey(vehiclePlate, false)
+--@param vehicleEntity: number [the entity ID of the vehicle]
+Bridge.CarKeys.RemoveKeys = function(vehiclePlate, vehicleEntity)
+    exports['ak47_qb_vehiclekeys']:RemoveKey(vehiclePlate, not NetworkGetEntityIsNetworked(vehicleEntity))
 end

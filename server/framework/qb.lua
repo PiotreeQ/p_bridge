@@ -18,6 +18,24 @@ end)
 
 Bridge.Framework = {}
 
+Bridge.Framework.getJobs = function()
+    local jobsData = {}
+    local jobs = QBCore.Shared.Jobs
+    for k, v in pairs(jobs) do
+        if not jobsData[k] then
+            jobsData[k] = {}
+        end
+        for grade, gradeData in pairs(v.grades) do
+            jobsData[k][tonumber(grade)] = {
+                name = v.isboss and 'boss' or v.name,
+                label = v.name,
+                grade = tonumber(grade),
+            }
+        end
+    end
+    return jobsData
+end
+
 --@param playerId: number [existing player id]
 --@return xPlayer: table [player object]
 Bridge.Framework.getPlayerById = function(playerId)

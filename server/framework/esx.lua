@@ -18,6 +18,18 @@ end)
 
 Bridge.Framework = {}
 
+Bridge.Framework.getJobs = function()
+    local jobsData = {}
+    local job_grades = MySQL.query.await('SELECT * FROM job_grades')
+    for k, v in pairs(job_grades) do
+        if not jobsData[v.job_name] then
+            jobsData[v.job_name] = {}
+        end
+        jobsData[v.job_name][v.grade] = { name = v.name, label = v.label, grade = v.grade, job_name = v.job_name }
+    end
+    return jobsData
+end
+
 --@param playerId: number [existing player id]
 --@return xPlayer: table [player object]
 Bridge.Framework.getPlayerById = function(playerId)

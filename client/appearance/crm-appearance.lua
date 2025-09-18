@@ -68,7 +68,8 @@ Bridge.Appearance.setPlayerClothing = function(clothingData)
         clothingData = json.decode(clothingData)
     end
 
-    exports['crm-appearance']:crm_set_ped_clothing(cache.ped, clothingData)
+    exports['crm-appearance']:crm_set_ped_clothing(cache.ped, clothingData.crm_clothing)
+    exports['crm-appearance']:crm_set_ped_accessories(cache.ped, clothingData.crm_accessories)
 
     if Config.Debug then
         lib.print.info('[Appearance] Set player clothing:', clothingData)
