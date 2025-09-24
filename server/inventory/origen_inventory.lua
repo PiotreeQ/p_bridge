@@ -12,6 +12,19 @@ end
 
 Bridge.Inventory = {}
 
+--@param playerId: number [existing player id]
+--@return items: table [{name: string, amount: number, metadata: table, slot: number}]
+Bridge.Inventory.getPlayerItems = function(playerId)
+    return exports['origen_inventory']:getInventoryItems(playerId)
+end
+
+--@param prefix: string [prefix for the drop]
+--@param items: table [name: string, count: number, metadata: table]
+--@param coords: vector3 [drop coordinates]
+Bridge.Inventory.CustomDrop = function(prefix, items, coords)
+    lib.print.error('CustomDrop is not supported in origen_inventory, please change type in config')
+end
+
 Bridge.Inventory.addItem = function(playerId, itemName, itemCount, itemMetadata, itemSlot)
     exports['origen_inventory']:addItem(playerId, itemName, itemCount, itemMetadata, itemSlot)
 end

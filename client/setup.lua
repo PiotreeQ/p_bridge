@@ -93,7 +93,7 @@ Bridge.Setup.Ped = function()
                 )
                 if IsControlPressed(0, 24) or IsDisabledControlPressed(0, 24) then
                     Bridge.Setup.inSetup = false
-                    lib.setClipboard(('vec4(%.2f, %.2f, %.2f, %.2f),'):format(currentCoords.x, currentCoords.y, currentCoords.z, GetEntityHeading(currentPed)))
+                    lib.setClipboard(('vec4(%.2f, %.2f, %.2f, %.2f),'):format(currentCoords.x, currentCoords.y, currentCoords.z + 1.0, GetEntityHeading(currentPed)))
                     Bridge.Notify.showNotify('Ped coords has been copied to your clipboard!', 'success')
                     DeletePed(currentPed)
                 end

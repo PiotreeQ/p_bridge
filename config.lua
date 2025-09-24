@@ -124,3 +124,25 @@ Config.ProgressBar = 'auto'
 
     -- open ticket on our discord if you want to add your progress bar system [discord.gg/piotreqscripts]
 ]]
+
+--@param Config.Society: string [set which society system you are using]
+Config.Society = 'auto'
+--[[
+    auto - will try to detect society system automatically
+    esx_addonaccount - ESX Addon Account [recommended for ESX]
+    qbcore - QBCore Society [recommended for QBCore/QBX]
+    standalone - no society system
+
+    -- open ticket on our discord if you want to add your society system [discord.gg/piotreqscripts]
+]]
+
+--@param Config.BossMenu: string [set which boss menu system you are using]
+Config.BossMenu = 'auto'
+--[[
+    auto - will try to detect boss menu system automatically
+    esx_society - ESX Society Boss Menu [recommended for ESX]
+    qbcore - QBCore Boss Menu [recommended for QBCore/QBX]
+    standalone - no boss menu system
+
+    -- open ticket on our discord if you want to add your boss menu system [discord.gg/piotreqscripts]
+]]

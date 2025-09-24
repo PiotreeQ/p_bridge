@@ -13,7 +13,18 @@ end
 QBCore = exports['qb-core']:GetCoreObject()
 
 -- UPDATE PLAYER DATA
-RegisterNetEvent('QBCore:Player:UpdatePlayerData', function(xPlayer) QBCore.PlayerData = xPlayer end)
+RegisterNetEvent('QBCore:Player:SetPlayerData', function(xPlayer) 
+    QBCore.PlayerData = xPlayer 
+    TriggerEvent('p_bridge/client/setPlayerData', QBCore.PlayerData)
+end)
+
+AddEventHandler('onClientResourceStart', function(resourceName)
+    if resourceName ~= cache.resource then return end
+    if not QBCore.PlayerData then return end 
+
+    Citizen.Wait(1000)
+    TriggerEvent('p_bridge/client/setPlayerData', QBCore.PlayerData)
+end)
 
 Bridge.Framework = {}
 

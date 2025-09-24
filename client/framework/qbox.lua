@@ -12,6 +12,20 @@ end
 
 Bridge.Framework = {}
 
+RegisterNetEvent('QBCore:Player:SetPlayerData', function(xPlayer) 
+    TriggerEvent('p_bridge/client/setPlayerData', xPlayer)
+end)
+
+AddEventHandler('onClientResourceStart', function(resourceName)
+    if resourceName ~= cache.resource then return end
+
+    local playerData = exports['qbx_core']:GetPlayerData() or {}
+    if not playerData then return end
+
+    Citizen.Wait(1000)
+    TriggerEvent('p_bridge/client/setPlayerData', playerData)
+end)
+
 --@return boolean [true if player is loaded, false otherwise]
 Bridge.Framework.isPlayerLoaded = function()
     return LocalPlayer.state.isLoggedIn

@@ -13,8 +13,23 @@ end
 ESX = exports['es_extended']:getSharedObject()
 
 -- UPDATE PLAYER DATA
-RegisterNetEvent('esx:playerLoaded', function(xPlayer) ESX.PlayerData = xPlayer end)
-RegisterNetEvent('esx:setJob', function(job) ESX.PlayerData.job = job end)
+RegisterNetEvent('esx:playerLoaded', function(xPlayer) 
+    ESX.PlayerData = xPlayer 
+    TriggerEvent('p_bridge/client/setPlayerData', ESX.PlayerData)
+end)
+
+RegisterNetEvent('esx:setJob', function(job) 
+    ESX.PlayerData.job = job 
+    TriggerEvent('p_bridge/client/setPlayerData', ESX.PlayerData)
+end)
+
+AddEventHandler('onClientResourceStart', function(resourceName)
+    if resourceName ~= cache.resource then return end
+    if not ESX.PlayerData then return end 
+
+    Citizen.Wait(1000)
+    TriggerEvent('p_bridge/client/setPlayerData', ESX.PlayerData)
+end)
 
 Bridge.Framework = {}
 

@@ -15,10 +15,18 @@ Bridge.CarKeys = {}
 --@param vehiclePlate: string [the plate of the vehicle]
 --@param vehicleEntity: number [the entity ID of the vehicle]
 Bridge.CarKeys.CreateKeys = function(vehiclePlate, vehicleEntity)
-    exports['mk_vehiclekeys']:AddKey(vehicleEntity)
+    if NetworkGetEntityIsNetworked(vehicleEntity) then
+        exports['mk_vehiclekeys']:AddKey(vehicleEntity)
+    else
+        Entity(vehicleEntity).state:set('Keys', {LocalPlayer.state.mk_identifier}, true)
+    end
 end
 
 --@param vehiclePlate: string [the plate of the vehicle]
 Bridge.CarKeys.RemoveKeys = function(vehiclePlate, vehicleEntity)
-    exports['mk_vehiclekeys']:RemoveKey(vehicleEntity)
+    if NetworkGetEntityIsNetworked(vehicleEntity) then
+        exports['mk_vehiclekeys']:RemoveKey(vehicleEntity)
+    else
+            Entity(vehicleEntity).state:set('Keys', {}, true)
+    end
 end

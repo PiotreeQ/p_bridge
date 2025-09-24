@@ -13,11 +13,19 @@ end
 Bridge.Progress = {}
 
 Bridge.Progress.Start = function(data)
+    if data.canCancel == nil then
+        data.canCancel = true
+    end
+
+    if data.useWhileDead == nil then
+        data.useWhileDead = false
+    end
+
     return lib.progressBar({
         duration = data.duration or 5000,
         label = data.label or 'Processing...',
-        useWhileDead = data.useWhileDead ~= nil and data.useWhileDead or false,
-        canCancel = data.canCancel ~= nil and data.canCancel or true,
+        useWhileDead = data.useWhileDead,
+        canCancel = data.canCancel,
         anim = data.anim or nil,
         prop = data.prop or nil,
         disable = data.disable or {move = true, car = true, combat = true}
@@ -25,12 +33,20 @@ Bridge.Progress.Start = function(data)
 end
 
 Bridge.Progress.StartCircle = function(data)
+    if data.canCancel == nil then
+        data.canCancel = true
+    end
+
+    if data.useWhileDead == nil then
+        data.useWhileDead = false
+    end
+
     return lib.progressCircle({
         duration = data.duration or 5000,
         position = data.position or 'center',
         label = data.label or 'Processing...',
-        useWhileDead = data.useWhileDead ~= nil and data.useWhileDead or false,
-        canCancel = data.canCancel ~= nil and data.canCancel or true,
+        useWhileDead = data.useWhileDead,
+        canCancel = data.canCancel,
         anim = data.anim or nil,
         prop = data.prop or nil,
         disable = data.disable or {move = true, car = true, combat = true}

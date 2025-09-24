@@ -13,6 +13,19 @@ end
 Bridge.Inventory = {}
 
 --@param playerId: number [existing player id]
+--@return items: table [{name: string, amount: number, metadata: table, slot: number}]
+Bridge.Inventory.getPlayerItems = function(playerId)
+    return exports['tgiann-inventory']:GetPlayerItems(playerId)
+end
+
+--@param prefix: string [prefix for the drop]
+--@param items: table [name: string, count: number, metadata: table]
+--@param coords: vector3 [drop coordinates]
+Bridge.Inventory.CustomDrop = function(prefix, items, coords)
+    exports['tgiann-inventory']:CustomDrop(prefix, items, coords)
+end
+
+--@param playerId: number [existing player id]
 --@param itemName: string [item name]
 --@param itemCount: number [amount of items to add]
 --@param itemMetadata: table [item metadata, optional]

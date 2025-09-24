@@ -24,5 +24,5 @@ end
 
 Bridge.Inventory.getItemData = function(itemName)
     local info = exports['codem-inventory']:GetItemList()[itemName]
-    return info and {name = itemName, label = info.label, image = ('https://cfx-nui-codem-inventory/html/itemimages/%s.png'):format(itemName)}
+    return info and {name = itemName, label = info.label, description = info.description, image = ('https://cfx-nui-codem-inventory/html/itemimages/%s.png'):format(itemName)}
 end

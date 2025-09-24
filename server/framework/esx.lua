@@ -219,3 +219,9 @@ Bridge.Framework.checkPermissions = function(playerId, requiredGroups)
 end
 
 lib.callback.register('p_bridge/server/framework/checkPermissions', Bridge.Framework.checkPermissions)
+
+--@param itemName: string [name of the item to register]
+--@param itemFunction: function [function to execute when the item is used]
+Bridge.Framework.registerItem = function(itemName, itemFunction)
+    ESX.RegisterUsableItem(itemName, itemFunction)
+end
