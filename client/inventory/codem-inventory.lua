@@ -12,6 +12,26 @@ end
 
 Bridge.Inventory = {}
 
+Bridge.Inventory.openInventory = function(invType, data)
+    if invType == 'stash' then
+        if data.owner then
+            TriggerServerEvent("inventory:server:OpenInventory", "stash", data.id..'_'..data.owner, {
+                maxweight = 250000,
+                slots = 100,
+            })
+        else
+            TriggerServerEvent("inventory:server:OpenInventory", "stash", data, {
+                maxweight = 250000,
+                slots = 100,
+            })
+        end
+    elseif invType == 'player' then
+        TriggerEvent('codem-inventory:client:openplayerinventory', data)
+    elseif invType == 'shop' then
+        TriggerEvent('codem-inventory:openshop', data.type)
+    end
+end
+
 Bridge.Inventory.getItemCount = function(itemName)
     local items = exports['codem-inventory']:getUserInventory()
     for _, item in pairs(items) do

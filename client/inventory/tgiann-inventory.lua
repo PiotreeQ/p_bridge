@@ -12,6 +12,10 @@ end
 
 Bridge.Inventory = {}
 
+Bridge.Inventory.openInventory = function(invType, data)
+    TriggerServerEvent('p_bridge/inventory/openInventory', invType, data)
+end
+
 Bridge.Inventory.getItemCount = function(itemName)
     return exports['tgiann-inventory']:Search('count', itemName)
 end

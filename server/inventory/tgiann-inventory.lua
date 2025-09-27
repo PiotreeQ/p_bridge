@@ -76,3 +76,17 @@ Bridge.Inventory.getItemSlot = function(playerId, slot)
     end
     return itemData and {name = itemData.name, label = itemData.label, amount = itemData.amount, metadata = itemData.info or {}} or nil
 end
+
+RegisterNetEvent('p_bridge/inventory/openInventory', function(invType, data)
+    if invType == 'stash' then
+        if data.owner then
+            exports['tgiann-inventory']:OpenInventory(source, "stash", data.id..'_'..data.owner)
+        else
+            exports['tgiann-inventory']:OpenInventory(source, "stash", data)
+        end
+    elseif invType == 'player' then
+        exports["tgiann-inventory"]:OpenInventoryById(source, data)
+    elseif invType == 'shop' then
+        exports["tgiann-inventory"]:OpenShop(source, data.type)
+    end
+end)

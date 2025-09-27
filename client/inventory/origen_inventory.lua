@@ -12,6 +12,10 @@ end
 
 Bridge.Inventory = {}
 
+Bridge.Inventory.openInventory = function(invType, data)
+    exports['origen_inventory']:openInventory(invType, data)
+end
+
 Bridge.Inventory.getItemCount = function(itemName)
     return exports['origen_inventory']:Search('count', itemName)
 end
