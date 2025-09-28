@@ -34,13 +34,17 @@ end
 --@return xPlayer: table [player object]
 Bridge.Framework.getPlayerById = function(playerId)
     if not playerId then
-        lib.print.error('Player ID is required to fetch player data.')
+        if Config.Debug then
+            lib.print.error('Player ID is required to fetch player data.')
+        end
         return nil
     end
 
     local xPlayer = ESX.GetPlayerFromId(playerId)
     if not xPlayer then
-        lib.print.error(('No player found with ID: %s'):format(playerId))
+        if Config.Debug then
+            lib.print.error(('No player found with ID: %s\nInvoker: %s'):format(playerId, GetInvokingResource() or GetCurrentResourceName()))
+        end
         return nil
     end
 
@@ -51,7 +55,9 @@ end
 --@return playerId: number [player ID]
 Bridge.Framework.getPlayerId = function(uniqueId)
     if not uniqueId then
-        lib.print.error('Unique ID is required to fetch player ID.')
+        if Config.Debug then
+            lib.print.error('Unique ID is required to fetch player ID.')
+        end
         return nil
     end
 
@@ -67,13 +73,17 @@ end
 --@return xPlayer: table [player object]
 Bridge.Framework.getPlayerByUniqueId = function(uniqueId)
     if not uniqueId then
-        lib.print.error('Unique ID is required to fetch player data.')
+        if Config.Debug then
+            lib.print.error('Unique ID is required to fetch player data.')
+        end
         return nil
     end
 
     local xPlayer = ESX.GetPlayerFromIdentifier(uniqueId)
     if not xPlayer then
-        lib.print.error(('No player found with Unique ID: %s'):format(uniqueId))
+        if Config.Debug then
+            lib.print.error(('No player found with Unique ID: %s\nInvoker: %s'):format(uniqueId, GetInvokingResource() or GetCurrentResourceName()))
+        end
         return nil
     end
 
@@ -85,7 +95,9 @@ end
 Bridge.Framework.getUniqueId = function(playerId)
     local xPlayer = type(playerId) == 'number' and ESX.GetPlayerFromId(playerId) or ESX.GetPlayerFromIdentifier(playerId)
     if not xPlayer then
-        lib.print.error(('No player found with ID: %s\nInvoker: %s'):format(playerId, GetInvokingResource() or GetCurrentResourceName()))
+        if Config.Debug then
+            lib.print.error(('No player found with ID: %s\nInvoker: %s'):format(playerId, GetInvokingResource() or GetCurrentResourceName()))
+        end
         return nil
     end
 
@@ -98,7 +110,10 @@ end
 Bridge.Framework.getPlayerJob = function(playerId)
     local xPlayer = type(playerId) == 'number' and ESX.GetPlayerFromId(playerId) or ESX.GetPlayerFromIdentifier(playerId)
     if not xPlayer then
-        lib.print.error(('No player found with ID: %s'):format(playerId))
+        if Config.Debug then
+            lib.print.error(('No player found with ID: %s'):format(playerId))
+        end
+        return nil
     end
 
     return {
@@ -116,7 +131,9 @@ end
 Bridge.Framework.getPlayerName = function(playerId, separate)
     local xPlayer = type(playerId) == 'number' and ESX.GetPlayerFromId(playerId) or ESX.GetPlayerFromIdentifier(playerId)
     if not xPlayer then
-        lib.print.error(('No player found with ID: %s\nInvoker: %s'):format(playerId, GetInvokingResource() or GetCurrentResourceName()))
+        if Config.Debug then
+            lib.print.error(('No player found with ID: %s\nInvoker: %s'):format(playerId, GetInvokingResource() or GetCurrentResourceName()))
+        end
         return nil
     end
 
@@ -133,7 +150,9 @@ end
 Bridge.Framework.getMoney = function(playerId)
     local xPlayer = type(playerId) == 'number' and ESX.GetPlayerFromId(playerId) or ESX.GetPlayerFromIdentifier(playerId)
     if not xPlayer then
-        lib.print.error(('No player found with ID: %s\nInvoker: %s'):format(playerId, GetInvokingResource() or GetCurrentResourceName()))
+        if Config.Debug then
+            lib.print.error(('No player found with ID: %s\nInvoker: %s'):format(playerId, GetInvokingResource() or GetCurrentResourceName()))
+        end
         return nil
     end
 
@@ -151,7 +170,9 @@ end
 Bridge.Framework.removeMoney = function(playerId, account, amount)
     local xPlayer = type(playerId) == 'number' and ESX.GetPlayerFromId(playerId) or ESX.GetPlayerFromIdentifier(playerId)
     if not xPlayer then
-        lib.print.error(('No player found with ID: %s\nInvoker: %s'):format(playerId, GetInvokingResource() or GetCurrentResourceName()))
+        if Config.Debug then
+            lib.print.error(('No player found with ID: %s\nInvoker: %s'):format(playerId, GetInvokingResource() or GetCurrentResourceName()))
+        end
         return false
     end
 

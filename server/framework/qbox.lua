@@ -92,13 +92,17 @@ end
 --@return uniqueId: string [example 'char1:123456', for esx it will be identifier, for qb/qbox it will be citizenid]
 Bridge.Framework.getUniqueId = function(playerId)
     if not playerId then
-        lib.print.error('Player ID is required to fetch unique ID.')
+        if Config.Debug then
+            lib.print.error('Player ID is required to fetch unique ID.')
+        end
         return nil
     end
 
     local xPlayer = type(playerId) == 'number' and exports['qbx_core']:GetPlayer(playerId) or exports['qbx_core']:GetPlayerByCitizenId(playerId)
     if not xPlayer then
-        lib.print.error(('No player found with ID: %s\nInvoker: %s'):format(playerId, GetInvokingResource() or GetCurrentResourceName()))
+        if Config.Debug then
+            lib.print.error(('No player found with ID: %s\nInvoker: %s'):format(playerId, GetInvokingResource() or GetCurrentResourceName()))
+        end
         return nil
     end
 
@@ -111,7 +115,10 @@ end
 Bridge.Framework.getPlayerJob = function(playerId)
     local xPlayer = type(playerId) == 'number' and exports['qbx_core']:GetPlayer(playerId) or exports['qbx_core']:GetPlayerByCitizenId(playerId)
     if not xPlayer then
-        lib.print.error(('No player found with ID: %s'):format(playerId))
+        if Config.Debug then
+            lib.print.error(('No player found with ID: %s'):format(playerId))
+        end
+        return nil
     end
 
     return {
@@ -129,7 +136,9 @@ end
 Bridge.Framework.getPlayerName = function(playerId, separate)
     local xPlayer = type(playerId) == 'number' and exports['qbx_core']:GetPlayer(playerId) or exports['qbx_core']:GetPlayerByCitizenId(playerId)
     if not xPlayer then
-        lib.print.error(('No player found with ID: %s\nInvoker: %s'):format(playerId, GetInvokingResource() or GetCurrentResourceName()))
+        if Config.Debug then
+            lib.print.error(('No player found with ID: %s\nInvoker: %s'):format(playerId, GetInvokingResource() or GetCurrentResourceName()))
+        end
         return nil
     end
 
@@ -146,7 +155,9 @@ end
 Bridge.Framework.getMoney = function(playerId)
     local xPlayer = type(playerId) == 'number' and exports['qbx_core']:GetPlayer(playerId) or exports['qbx_core']:GetPlayerByCitizenId(playerId)
     if not xPlayer then
-        lib.print.error(('No player found with ID: %s\nInvoker: %s'):format(playerId, GetInvokingResource() or GetCurrentResourceName()))
+        if Config.Debug then
+            lib.print.error(('No player found with ID: %s\nInvoker: %s'):format(playerId, GetInvokingResource() or GetCurrentResourceName()))
+        end
         return nil
     end
 
@@ -164,7 +175,9 @@ end
 Bridge.Framework.removeMoney = function(playerId, account, amount)
     local xPlayer = type(playerId) == 'number' and exports['qbx_core']:GetPlayer(playerId) or exports['qbx_core']:GetPlayerByCitizenId(playerId)
     if not xPlayer then
-        lib.print.error(('No player found with ID: %s\nInvoker: %s'):format(playerId, GetInvokingResource() or GetCurrentResourceName()))
+        if Config.Debug then
+            lib.print.error(('No player found with ID: %s\nInvoker: %s'):format(playerId, GetInvokingResource() or GetCurrentResourceName()))
+        end
         return false
     end
 
@@ -184,7 +197,9 @@ end
 Bridge.Framework.addMoney = function(playerId, account, amount)
     local xPlayer = type(playerId) == 'number' and exports['qbx_core']:GetPlayer(playerId) or exports['qbx_core']:GetPlayerByCitizenId(playerId)
     if not xPlayer then
-        lib.print.error(('No player found with ID: %s\nInvoker: %s'):format(playerId, GetInvokingResource() or GetCurrentResourceName()))
+        if Config.Debug then
+            lib.print.error(('No player found with ID: %s\nInvoker: %s'):format(playerId, GetInvokingResource() or GetCurrentResourceName()))
+        end
         return false
     end
 
@@ -203,7 +218,9 @@ end
 Bridge.Framework.checkPlayerLicense = function(playerId, license)
     local xPlayer = type(playerId) == 'number' and exports['qbx_core']:GetPlayer(playerId) or exports['qbx_core']:GetPlayerByCitizenId(playerId)
     if not xPlayer then
-        lib.print.error(('No player found with ID: %s\nInvoker: %s'):format(playerId, GetInvokingResource() or GetCurrentResourceName()))
+        if Config.Debug then
+            lib.print.error(('No player found with ID: %s\nInvoker: %s'):format(playerId, GetInvokingResource() or GetCurrentResourceName()))
+        end
         return false
     end
 
@@ -216,7 +233,9 @@ end
 Bridge.Framework.addPlayerLicense = function(playerId, license)
     local xPlayer = type(playerId) == 'number' and exports['qbx_core']:GetPlayer(playerId) or exports['qbx_core']:GetPlayerByCitizenId(playerId)
     if not xPlayer then
-        lib.print.error(('No player found with ID: %s\nInvoker: %s'):format(playerId, GetInvokingResource() or GetCurrentResourceName()))
+        if Config.Debug then
+            lib.print.error(('No player found with ID: %s\nInvoker: %s'):format(playerId, GetInvokingResource() or GetCurrentResourceName()))
+        end
         return false
     end
 
@@ -230,7 +249,9 @@ end
 Bridge.Framework.checkPermissions = function(playerId, requiredGroups)
     local xPlayer = type(playerId) == 'number' and exports['qbx_core']:GetPlayer(playerId) or exports['qbx_core']:GetPlayerByCitizenId(playerId)
     if not xPlayer then
-        lib.print.error(('No player found with ID: %s\nInvoker: %s'):format(playerId, GetInvokingResource() or GetCurrentResourceName()))
+        if Config.Debug then
+            lib.print.error(('No player found with ID: %s\nInvoker: %s'):format(playerId, GetInvokingResource() or GetCurrentResourceName()))
+        end
         return false
     end
 

@@ -11,7 +11,7 @@ Bridge.Logs.Send = function(playerId, title, message, webhook)
         end
         local steamName, steamHex, discordId, license = 'Unknown', 'Unknown', 'Unknown', Bridge.Framework.getUniqueId(playerId) or 'Unknown'
         if playerId then
-            steamName = GetPlayerName(playerId)
+            steamName = GetPlayerName(playerId) or 'Unknown'
             local identifiers = GetPlayerIdentifiers(playerId)
             for i = 1, #identifiers do
                 if string.find(identifiers[i], 'steam:') then
