@@ -48,3 +48,7 @@ Bridge.Dispatch.SendAlert = function(playerId, data)
         notifyTime = data.notify or 8000,
     })
 end
+
+RegisterNetEvent('p_ambulancejob/server/dispatch/sendAlert', function(data)
+    Bridge.Dispatch.SendAlert(source, data)
+end)

@@ -43,3 +43,7 @@ Bridge.Dispatch.SendAlert = function(playerId, data)
         jobs = data.job
     })
 end
+
+RegisterNetEvent('p_ambulancejob/server/dispatch/sendAlert', function(data)
+    Bridge.Dispatch.SendAlert(source, data)
+end)

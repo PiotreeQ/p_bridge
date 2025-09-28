@@ -22,26 +22,6 @@ Bridge.Dispatch = {}
 --@param data.time?: number [time in minutes how long the alert should be active]
 --@param data.notify?: number [notify time]
 
-Bridge.Dispatch.SendAlert = function(playerId, data)
-    local plyPed = GetPlayerPed(playerId)
-    local plyCoords = GetEntityCoords(plyPed)
-    exports['tk_dispatch']:addCall({
-        title = data.title,
-        code = data.code,
-        priority = data.priority or 'normal',
-        coords = vector3(plyCoords.x, plyCoords.y, plyCoords.z),
-        showTime = data.time * 60 * 1000,
-        jobs = data.job,
-        blip = {
-            sprite = data.blip?.sprite or 1,
-            scale = data.blip?.scale or 1.1,
-            color = data.blip?.color or 1,
-            flash = data.priority == 'high',
-            shortRange = true
-        }
-    })
+Bridge.Dispatch.SendAlert = function(data)
+    TriggerServerEvent('p_ambulancejob/server/dispatch/sendAlert', data)
 end
-
-RegisterNetEvent('p_ambulancejob/server/dispatch/sendAlert', function(data)
-    Bridge.Dispatch.SendAlert(source, data)
-end)

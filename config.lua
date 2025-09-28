@@ -14,7 +14,7 @@ Config.Language = 'en' -- [en, pl, fr, de, es, it, tr, ru]
 Config.Framework = 'auto'
 --[[
     auto - will try to detect framework automatically
-    qbcore - QBCore Framework
+    qb - QBCore Framework
     qbox = QBX Framework
     esx - ESX Framework
     standalone - Standalone (no framework)

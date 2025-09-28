@@ -24,6 +24,10 @@ Bridge.Inventory.openInventory = function(invType, data)
             TriggerServerEvent('p_policejob/inventory/openInventory', invType, data)
         end
     elseif invType == 'shop' then
+        if not data.label then
+            data.label = data.type
+        end
+        
         if data.items then
             for i = 1, #data.items, 1 do
                 data.items[i].slot = i
