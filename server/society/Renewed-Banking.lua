@@ -13,17 +13,17 @@ end
 Bridge.Society = {}
 
 Bridge.Society.addMoney = function(playerId, jobName, amount)
-    local result = exports['Renewed-Banking']:AddAccountMoney(jobName, amount)
+    local result = exports['Renewed-Banking']:addAccountMoney(jobName, amount)
     return result
 end
 
 Bridge.Society.removeMoney = function(playerId, jobName, amount)
-    local result = exports['Renewed-Banking']:RemoveAccountMoney(jobName, amount)
+    local result = exports['Renewed-Banking']:removeAccountMoney(jobName, amount)
     return result
 end
 
 Bridge.Society.getMoney = function(playerId, jobName)
-    local money = exports['Renewed-Banking']:GetAccountMoney(jobName)
+    local money = exports['Renewed-Banking']:getAccountMoney(jobName)
     if money then
         return money
     end
