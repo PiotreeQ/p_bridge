@@ -15,5 +15,8 @@ Bridge.Notify = {}
 local QBCore = exports['qb-core']:GetCoreObject()
 
 Bridge.Notify.showNotify = function(message, type)
+    if type == 'inform' then
+        type = 'info'
+    end
     QBCore.Functions.Notify(message, type)
 end

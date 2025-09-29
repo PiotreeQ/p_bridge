@@ -31,7 +31,7 @@ Bridge.Progress.Start = function(data)
         canCancel = data.canCancel ~= nil and data.canCancel or true,
         controlDisables = disableControls,
         animation = data.anim and {animDict = data.anim?.dict, anim = data.anim?.clip, flags = data.anim?.flag} or nil,
-        prop = data.prop and {model = data.prop?.model, bone = data.prop?.bone, coords = data.prop?.pos, rot = data.prop?.rot} or nil,
+        prop = data.prop and {model = data.prop?.model, bone = data.prop?.bone, coords = data.prop?.pos, rotation = data.prop?.rot} or nil,
     }, function(cancelled)
         p:resolve(not cancelled)
     end)
