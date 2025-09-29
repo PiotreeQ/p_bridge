@@ -140,8 +140,9 @@ Config.Society = 'auto'
 Config.BossMenu = 'auto'
 --[[
     auto - will try to detect boss menu system automatically
-    esx_society - ESX Society Boss Menu [recommended for ESX]
-    qbcore - QBCore Boss Menu [recommended for QBCore/QBX]
+    esx_society - ESX Society Boss Menu
+    qbx_management - QBX Management
+    qb-management - QB Management
     standalone - no boss menu system
 
     -- open ticket on our discord if you want to add your boss menu system [discord.gg/piotreqscripts]
