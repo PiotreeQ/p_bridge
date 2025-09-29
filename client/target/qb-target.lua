@@ -164,7 +164,7 @@ Bridge.Target.addEntity = function(netIds, options)
             options[i].item = options[i].items
         end
     end
-    exports['qb-target']:AddTargetEntity(entities, {
+    exports['qb-target']:AddTargetEntity(netIds, {
         options = options,
         distance = options[1]?.distance or 2.0,
     })
@@ -199,7 +199,10 @@ Bridge.Target.addLocalEntity = function(entities, options)
             options[i].item = options[i].items
         end
     end
-    exports['qb-target']:AddTargetEntity(entities, options)
+    exports['qb-target']:AddTargetEntity(entities, {
+        options = options,
+        distance = options[1]?.distance or 2.0,
+    })
 end
 
 --@param entities: number | number[]
