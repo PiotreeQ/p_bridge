@@ -12,6 +12,16 @@ end
 
 Bridge.Inventory = {}
 
+RegisterNetEvent('p_bridge/inventory/openInventory', function(invType, data)
+    if invType == 'shop' then
+        exports['qb-inventory']:OpenShop(source, data.type)
+    elseif invType == 'player' then
+        exports['qb-inventory']:OpenInventoryById(source, data)
+    else
+        exports['qb-inventory']:OpenInventory(source, data)
+    end
+end)
+
 --@param playerId: number [existing player id]
 --@return items: table [{name: string, amount: number, metadata: table, slot: number}]
 Bridge.Inventory.getPlayerItems = function(playerId)

@@ -36,6 +36,30 @@ Bridge.Progress.Start = function(data)
     return Citizen.Await(p)
 end
 
+Bridge.Progress.StartCircle = function(data)
+    if Bridge.Progress.active then
+        return false
+    end
+
+    local p = promise.new()
+    Bridge.Progress.active = true
+    exports['esx_progressbar']:Progressbar(data.label or 'Processing...', data.duration or 5000, {
+        FreezePlayer = data.disable ~= nil, 
+        animation = data.anim and {
+            type = "anim",
+            dict = data.anim?.dict, 
+            lib = data.anim?.clip
+        } or nil,
+        onFinish = function()
+        p:resolve(true)
+    end, onCancel = function()
+        p:resolve(false)
+    end})
+
+    Bridge.Progress.active = false
+    return Citizen.Await(p)
+end
+
 Bridge.Progress.isActive = function()
     return Bridge.Progress.active
 end
