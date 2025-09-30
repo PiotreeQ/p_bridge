@@ -21,7 +21,7 @@ Bridge.Inventory.openInventory = function(invType, data)
             })
             TriggerEvent("inventory:client:SetCurrentStash", data.id..'_'..data.owner)
         else
-            TriggerServerEvent('p_policejob/inventory/openInventory', invType, data)
+            TriggerServerEvent('p_bridge/inventory/openInventory', invType, data)
         end
     elseif invType == 'shop' then
         TriggerServerEvent('p_bridge/inventory/openInventory', invType, data)

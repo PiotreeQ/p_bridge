@@ -23,47 +23,12 @@ end
 local globalOptions = {}
 
 Bridge.Target.addGlobal = function(options)
-    local name = ('p_bridge_global_%s_%s'):format(GetInvokingResource() or GetCurrentResourceName(), tostring(math.random(11111111, 99999999)))
-    for i = 1, #options do
-        if options[i].onSelect then
-            options[i].action = options[i].onSelect
-        end
-        if options[i].groups then
-            options[i].job = options[i].groups
-        end
-        if options[i].items then
-            options[i].item = options[i].items
-        end
-    end
-    globalOptions[name] = true
-    Citizen.CreateThread(function()
-        while globalOptions[name] do
-            if globalOptions[name] then
-                local coords = GetEntityCoords(cache.ped)
-                exports['qb-target']:RemoveZone(name)
-                Citizen.Wait(100)
-                exports['qb-target']:AddBoxZone(name, coords, 1000.0, 1000.0, {
-                    name = name,
-                    heading = 0,
-                    debugPoly = Config.Debug,
-                    minZ = coords.z - 30.0,
-                    maxZ = coords.z + 30.0,
-                }, {
-                    options = options,
-                    distance = options[1]?.distance or 2.0,
-                })
-            end
-            Citizen.Wait(5000)
-        end
-
-        exports['qb-target']:RemoveZone(name)
-    end)
+    return 'textUI' -- dont touch it
 end
 
 --@param optionNames: string | string[] [names of the options to remove]
 Bridge.Target.removeGlobal = function(optionNames)
-    globalOptions[optionNames] = nil
-    exports['qb-target']:RemoveZone(optionNames)
+    -- qb-target doesnt support global, scripts use text ui instead
 end
 
 
@@ -74,7 +39,16 @@ Bridge.Target.addPlayer = function(options)
             options[i].action = options[i].onSelect
         end
         if options[i].groups then
-            options[i].job = options[i].groups
+            local jobs = {}
+            for k, v in pairs(options[i].groups) do
+                if type(v) == 'string' then
+                    jobs[v] = 0
+                else
+                    jobs = options[i].groups
+                    break
+                end
+            end
+            options[i].job = jobs
         end
         if options[i].items then
             options[i].item = options[i].items
@@ -98,7 +72,16 @@ Bridge.Target.addVehicle = function(options)
             options[i].action = options[i].onSelect
         end
         if options[i].groups then
-            options[i].job = options[i].groups
+            local jobs = {}
+            for k, v in pairs(options[i].groups) do
+                if type(v) == 'string' then
+                    jobs[v] = 0
+                else
+                    jobs = options[i].groups
+                    break
+                end
+            end
+            options[i].job = jobs
         end
         if options[i].items then
             options[i].item = options[i].items
@@ -123,7 +106,16 @@ Bridge.Target.addModel = function(models, options)
             options[i].action = options[i].onSelect
         end
         if options[i].groups then
-            options[i].job = options[i].groups
+            local jobs = {}
+            for k, v in pairs(options[i].groups) do
+                if type(v) == 'string' then
+                    jobs[v] = 0
+                else
+                    jobs = options[i].groups
+                    break
+                end
+            end
+            options[i].job = jobs
         end
         if options[i].items then
             options[i].item = options[i].items
@@ -158,7 +150,16 @@ Bridge.Target.addEntity = function(netIds, options)
             options[i].action = options[i].onSelect
         end
         if options[i].groups then
-            options[i].job = options[i].groups
+            local jobs = {}
+            for k, v in pairs(options[i].groups) do
+                if type(v) == 'string' then
+                    jobs[v] = 0
+                else
+                    jobs = options[i].groups
+                    break
+                end
+            end
+            options[i].job = jobs
         end
         if options[i].items then
             options[i].item = options[i].items
@@ -193,7 +194,16 @@ Bridge.Target.addLocalEntity = function(entities, options)
             options[i].action = options[i].onSelect
         end
         if options[i].groups then
-            options[i].job = options[i].groups
+            local jobs = {}
+            for k, v in pairs(options[i].groups) do
+                if type(v) == 'string' then
+                    jobs[v] = 0
+                else
+                    jobs = options[i].groups
+                    break
+                end
+            end
+            options[i].job = jobs
         end
         if options[i].items then
             options[i].item = options[i].items
@@ -218,7 +228,16 @@ Bridge.Target.addSphereZone = function(parameters)
             parameters.options[i].action = parameters.options[i].onSelect
         end
         if parameters.options[i].groups then
-            parameters.options[i].job = parameters.options[i].groups
+            local jobs = {}
+            for k, v in pairs(parameters.options[i].groups) do
+                if type(v) == 'string' then
+                    jobs[v] = 0
+                else
+                    jobs = parameters.options[i].groups
+                    break
+                end
+            end
+            parameters.options[i].job = jobs
         end
         if parameters.options[i].items then
             parameters.options[i].item = parameters.options[i].items
@@ -226,7 +245,7 @@ Bridge.Target.addSphereZone = function(parameters)
     end
     local invoker = GetInvokingResource() or GetCurrentResourceName()
     local targetName = ('%s_%s_%s'):format(invoker, 'sphere', tostring(math.random(11111111, 99999999)))
-    exports['qb-target']:AddCircleZone(targetName, parameters.coords, parameters.radius or 1.5, {
+    exports['qb-target']:AddCircleZone(targetName, parameters.coords, parameters.radius or 1.0, {
         name = targetName,
         debugPoly = Config.Debug,
         drawSprite = parameters.drawSprite or false,

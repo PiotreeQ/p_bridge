@@ -12,6 +12,16 @@ end
 
 Bridge.Inventory = {}
 
+RegisterNetEvent('p_bridge/inventory/openInventory', function(invType, data)
+    if invType == 'shop' then
+        exports['jpr-inventory']:OpenShop(source, data.type)
+    elseif invType == 'player' then
+        exports['jpr-inventory']:OpenInventoryById(source, data)
+    else
+        exports['jpr-inventory']:OpenInventory(source, data)
+    end
+end)
+
 --@param playerId: number [existing player id]
 --@return items: table [{name: string, amount: number, metadata: table, slot: number}]
 Bridge.Inventory.getPlayerItems = function(playerId)
@@ -69,4 +79,24 @@ end
 Bridge.Inventory.getItemSlot = function(playerId, slot)
     local itemSlot = exports['jpr-inventory']:GetItemBySlot(playerId, slot)
     return itemSlot and {name = itemSlot.name, label = itemSlot.label, amount = itemSlot.amount, metadata = itemSlot.info or {}} or nil
+end
+
+---@param shopName: string [unique shop name]
+---@param data: table [shop data]
+Bridge.Inventory.createShop = function(shopName, data)
+    for i = 1, #data.inventory, 1 do
+        if not data.inventory[i].slot then
+            data.inventory[i].slot = i
+        end
+        
+        if not data.inventory[i].amount then
+            data.inventory[i].amount = 1000
+        end
+    end
+    exports['jpr-inventory']:CreateShop({
+        name = shopName,
+        label = data.label,
+        slots = #data.inventory,
+        items = data.inventory
+    })
 end

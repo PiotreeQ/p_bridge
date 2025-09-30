@@ -80,3 +80,23 @@ Bridge.Inventory.getItemSlot = function(playerId, slot)
     local itemSlot = exports['qb-inventory']:GetItemBySlot(playerId, slot)
     return itemSlot and {name = itemSlot.name, label = itemSlot.label, amount = itemSlot.amount, metadata = itemSlot.info or {}} or nil
 end
+
+---@param shopName: string [unique shop name]
+---@param data: table [shop data]
+Bridge.Inventory.createShop = function(shopName, data)
+    for i = 1, #data.inventory, 1 do
+        if not data.inventory[i].slot then
+            data.inventory[i].slot = i
+        end
+        
+        if not data.inventory[i].amount then
+            data.inventory[i].amount = 1000
+        end
+    end
+    exports['qb-inventory']:CreateShop({
+        name = shopName,
+        label = data.label,
+        slots = #data.inventory,
+        items = data.inventory
+    })
+end
