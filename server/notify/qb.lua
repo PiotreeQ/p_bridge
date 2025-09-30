@@ -16,7 +16,7 @@ local QBCore = exports['qb-core']:GetCoreObject()
 
 Bridge.Notify.showNotify = function(playerId, message, type)
     if type == 'inform' then
-        type = 'info'
+        type = 'primary'
     end
     
     TriggerClientEvent('QBCore:Notify', playerId, message, type)
