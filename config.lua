@@ -95,6 +95,7 @@ Config.CarKeys = 'auto'
     ak47_vehiclekeys - Ak47 Vehicle Keys
     ak47_qb_vehiclekeys - Ak47 QBCore Vehicle Keys
     mk_vehiclekeys - MK Vehicle Keys
+    cd_garage - Codesign Garage Keys
     none - no car keys system
 
     -- open ticket on our discord if you want to add your car keys system [discord.gg/piotreqscripts]
@@ -109,6 +110,7 @@ Config.Dispatch = 'auto'
     cd_dispatch - CodeM Dispatch
     qs-dispatch - QS Dispatch
     tk_dispatch - TK Dispatch
+    rcore_dispatch - RCore Dispatch
     lb-tablet - LB-Tablet Dispatch
 
     -- open ticket on our discord if you want to add your dispatch system [discord.gg/piotreqscripts]
@@ -130,8 +132,9 @@ Config.Society = 'auto'
 --[[
     auto - will try to detect society system automatically
     esx_addonaccount - ESX Addon Account [recommended for ESX]
-    qbcore - QBCore Society [recommended for QBCore/QBX]
-    standalone - no society system
+    p_banking - pScripts Banking [recommended]
+    qb-banking - QBCore Banking
+    Renewed-Banking - Renewed Banking
 
     -- open ticket on our discord if you want to add your society system [discord.gg/piotreqscripts]
 ]]
@@ -146,4 +149,15 @@ Config.BossMenu = 'auto'
     standalone - no boss menu system
 
     -- open ticket on our discord if you want to add your boss menu system [discord.gg/piotreqscripts]
+]]
+
+--@param Config.Fuel: string [set which fuel system you are using]
+Config.Fuel = 'auto'
+--[[
+    auto - will try to detect fuel system automatically
+    ox_fuel - ox_fuel [recommended]
+    LegacyFuel - LegacyFuel
+    none - no fuel system
+    
+    -- open ticket on our discord if you want to add your fuel system [discord.gg/piotreqscripts]
 ]]

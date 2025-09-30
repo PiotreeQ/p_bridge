@@ -18,7 +18,8 @@ client_scripts {
     'client/notify/*.lua',
     'client/progress/*.lua',
     'client/target/*.lua',
-    'client/bossmenu/*.lua'
+    'client/bossmenu/*.lua',
+    'client/fuel/*.lua'
 }
 
 server_scripts {
