@@ -135,6 +135,7 @@ Config.Society = 'auto'
     p_banking - pScripts Banking [recommended]
     qb-banking - QBCore Banking
     Renewed-Banking - Renewed Banking
+    none - no society system
 
     -- open ticket on our discord if you want to add your society system [discord.gg/piotreqscripts]
 ]]
