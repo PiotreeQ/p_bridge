@@ -136,6 +136,7 @@ Config.Society = 'auto'
     qb-banking - QBCore Banking
     nass_bossmenu - Nass Boss Menu
     Renewed-Banking - Renewed Banking
+    okokBanking - Okok Banking
     none - no society system
 
     -- open ticket on our discord if you want to add your society system [discord.gg/piotreqscripts]
@@ -148,6 +149,7 @@ Config.BossMenu = 'auto'
     esx_society - ESX Society Boss Menu
     qbx_management - QBX Management
     qb-management - QB Management
+    okokBossMenu - Okok Boss Menu
     standalone - no boss menu system
 
     -- open ticket on our discord if you want to add your boss menu system [discord.gg/piotreqscripts]
