@@ -34,6 +34,9 @@ Bridge.Inventory.openInventory = function(invType, data)
                 if not data.items[i].amount then
                     data.items[i].amount = 1000
                 end
+                if not data.items[i].price then
+                    data.items[i].price = 0
+                end
             end
         end
         TriggerServerEvent("inventory:server:OpenInventory", "shop", data.type..'_'..data.id, data)

@@ -75,6 +75,7 @@ Config.Appearance = 'auto'
     rcore_clothing - RCore Clothing
     bl_appearance - Bl Appearance
     crm-appearance - CRM Appearance
+    tgiann-clothing - Tgiann Clothing
     esx_skin = ESX Skin
     qb-clothing = QBCore Clothing
 
