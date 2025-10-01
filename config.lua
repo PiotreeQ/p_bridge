@@ -134,6 +134,7 @@ Config.Society = 'auto'
     esx_addonaccount - ESX Addon Account [recommended for ESX]
     p_banking - pScripts Banking [recommended]
     qb-banking - QBCore Banking
+    nass_bossmenu - Nass Boss Menu
     Renewed-Banking - Renewed Banking
     none - no society system
 
