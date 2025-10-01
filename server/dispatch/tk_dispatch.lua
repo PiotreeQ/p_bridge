@@ -7,7 +7,7 @@ while not Bridge do
 end
 
 if Config.Debug then
-    lib.print.info('[Notify] Loaded: tk-dispatch')
+    lib.print.info('[Dispatch] Loaded: tk-dispatch')
 end
 
 Bridge.Dispatch = {}
@@ -43,5 +43,6 @@ Bridge.Dispatch.SendAlert = function(playerId, data)
 end
 
 RegisterNetEvent('p_ambulancejob/server/dispatch/sendAlert', function(data)
-    Bridge.Dispatch.SendAlert(source, data)
+    local _source = source
+    Bridge.Dispatch.SendAlert(_source, data)
 end)

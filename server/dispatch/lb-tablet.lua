@@ -7,7 +7,7 @@ while not Bridge do
 end
 
 if Config.Debug then
-    lib.print.info('[Notify] Loaded: lb-tablet')
+    lib.print.info('[Dispatch] Loaded: lb-tablet')
 end
 
 Bridge.Dispatch = {}

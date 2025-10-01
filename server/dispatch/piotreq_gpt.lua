@@ -7,7 +7,7 @@ while not Bridge do
 end
 
 if Config.Debug then
-    lib.print.info('[Notify] Loaded: piotreq_gpt')
+    lib.print.info('[Dispatch] Loaded: piotreq_gpt')
 end
 
 Bridge.Dispatch = {}

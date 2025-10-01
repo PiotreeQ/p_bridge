@@ -7,7 +7,7 @@ while not Bridge do
 end
 
 if Config.Debug then
-    lib.print.info('[Notify] Loaded: tk-dispatch')
+    lib.print.info('[Dispatch] Loaded: tk-dispatch')
 end
 
 Bridge.Dispatch = {}
