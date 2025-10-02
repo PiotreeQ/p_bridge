@@ -97,6 +97,7 @@ Config.CarKeys = 'auto'
     ak47_qb_vehiclekeys - Ak47 QBCore Vehicle Keys
     mk_vehiclekeys - MK Vehicle Keys
     cd_garage - Codesign Garage Keys
+    filo_vehiclekey - Filo Vehicle Key
     none - no car keys system
 
     -- open ticket on our discord if you want to add your car keys system [discord.gg/piotreqscripts]
@@ -138,6 +139,7 @@ Config.Society = 'auto'
     nass_bossmenu - Nass Boss Menu
     Renewed-Banking - Renewed Banking
     okokBanking - Okok Banking
+    RxBanking - RxBanking
     none - no society system
 
     -- open ticket on our discord if you want to add your society system [discord.gg/piotreqscripts]
