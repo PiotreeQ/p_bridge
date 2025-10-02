@@ -164,6 +164,7 @@ Config.Fuel = 'auto'
     auto - will try to detect fuel system automatically
     ox_fuel - ox_fuel [recommended]
     LegacyFuel - LegacyFuel
+    lc_fuel - lc_fuel
     none - no fuel system
     
     -- open ticket on our discord if you want to add your fuel system [discord.gg/piotreqscripts]
