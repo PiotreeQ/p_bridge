@@ -90,7 +90,7 @@ Bridge.Appearance.setPlayerClothing = function(clothingData)
         ['decals'] = true, ['watches'] = true, ['bracelet'] = true, ['chain'] = true
     }
     local skinData = {}
-    for k, v in pairs(clothes) do
+    for k, v in pairs(clothingData) do
         for name, _ in pairs(restricted) do
             if v.name:find(name) then
                 table.insert(skinData, v)
