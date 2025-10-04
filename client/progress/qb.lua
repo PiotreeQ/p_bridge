@@ -1,4 +1,4 @@
-if (Config.ProgressBar == 'auto' and not checkResource('progressbar')) or (Config.ProgressBar ~= 'auto' and Config.ProgressBar ~= 'qb-core') then
+if (Config.ProgressBar == 'auto' and not checkResource('progressbar')) or (Config.ProgressBar ~= 'auto' and Config.ProgressBar ~= 'qb') then
     return
 end
 
@@ -7,7 +7,7 @@ while not Bridge do
 end
 
 if Config.Debug then
-    lib.print.info('[Notify] Loaded: qb-core')
+    lib.print.info('[Progress] Loaded: qb')
 end
 
 Bridge.Progress = {}
