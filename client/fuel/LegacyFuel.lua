@@ -1,4 +1,4 @@
-if (Config.Fuel == 'auto' and not checkResource('ox_fuel')) or (Config.Fuel ~= 'auto' and Config.Fuel ~= 'ox_fuel') then
+if (Config.Fuel == 'auto' and not checkResource('LegacyFuel')) or (Config.Fuel ~= 'auto' and Config.Fuel ~= 'LegacyFuel') then
     return
 end
 
@@ -7,12 +7,11 @@ while not Bridge do
 end
 
 if Config.Debug then
-    lib.print.info('[Fuel] Loaded: OX')
+    lib.print.info('[Fuel] Loaded: LegacyFuel')
 end
 
 Bridge.Fuel = {}
 
 Bridge.Fuel.SetFuel = function(vehicle, fuelLevel)
-    SetVehicleFuelLevel(vehicle, fuelLevel)
-    Entity(vehicle).state.fuel = fuelLevel
+    exports['LegacyFuel']:SetFuel(vehicle, fuelLevel)
 end
