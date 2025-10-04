@@ -140,6 +140,7 @@ Config.Society = 'auto'
     Renewed-Banking - Renewed Banking
     okokBanking - Okok Banking
     RxBanking - RxBanking
+    vms_bossmenu - VMS Boss Menu
     none - no society system
 
     -- open ticket on our discord if you want to add your society system [discord.gg/piotreqscripts]
@@ -153,6 +154,7 @@ Config.BossMenu = 'auto'
     qbx_management - QBX Management
     qb-management - QB Management
     okokBossMenu - Okok Boss Menu
+    vms_bossmenu - VMS Boss Menu
     standalone - no boss menu system
 
     -- open ticket on our discord if you want to add your boss menu system [discord.gg/piotreqscripts]
@@ -166,6 +168,7 @@ Config.Fuel = 'auto'
     LegacyFuel - LegacyFuel
     lc_fuel - lc_fuel
     cdn-fuel - cdn-fuel
+    rcore_fuel - rcore_fuel
     none - no fuel system
     
     -- open ticket on our discord if you want to add your fuel system [discord.gg/piotreqscripts]
