@@ -256,7 +256,7 @@ Bridge.Framework.checkPermissions = function(playerId, requiredGroups)
     end
 
     for group, _ in pairs(requiredGroups) do
-        if QBCore.Functions.HasPermission(playerId, group) then
+        if exports['qbx_core']:HasPermission(playerId, group) then
             return true
         end
     end
