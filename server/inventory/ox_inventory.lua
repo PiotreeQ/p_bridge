@@ -56,5 +56,10 @@ Bridge.Inventory.getItemSlot = function(playerId, slot)
 end
 
 Bridge.Inventory.createShop = function(shopName, data)
+    while GetResourceState('ox_inventory') ~= 'started' do
+        Citizen.Wait(100)
+    end
+
+    Citizen.Wait(100)
     exports['ox_inventory']:RegisterShop(shopName, data)
 end
