@@ -155,6 +155,7 @@ Config.BossMenu = 'auto'
     qb-management - QB Management
     okokBossMenu - Okok Boss Menu
     vms_bossmenu - VMS Boss Menu
+    xnr-bossmenu - Xandir Boss Menu
     standalone - no boss menu system
 
     -- open ticket on our discord if you want to add your boss menu system [discord.gg/piotreqscripts]
