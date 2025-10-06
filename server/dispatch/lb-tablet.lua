@@ -26,7 +26,7 @@ Bridge.Dispatch.SendAlert = function(playerId, data)
     local plyPed = GetPlayerPed(playerId)
     local plyCoords = GetEntityCoords(plyPed)
     exports["lb-tablet"]:AddDispatch({
-        priority = data.priority or 'normal',
+        priority = data.priority or 'low',
         code = data.code,
         title = data.title,
         description = ('%s - %s'):format(data.code, data.title),
