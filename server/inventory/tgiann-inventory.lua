@@ -77,6 +77,28 @@ Bridge.Inventory.getItemSlot = function(playerId, slot)
     return itemData and {name = itemData.name, label = itemData.label, amount = itemData.amount, metadata = itemData.info or {}} or nil
 end
 
+Bridge.Inventory.createShop = function(shopName, data)
+    while GetResourceState('tgiann-inventory') ~= 'started' do
+        Citizen.Wait(100)
+    end
+    
+    for i = 1, #data.inventory, 1 do
+        if not data.inventory[i].amount then
+            data.inventory[i].amount = 9999
+        end
+
+        if not data.inventory[i].slot then
+            data.inventory[i].slot = i
+        end
+        if data.inventory[i].name:find('WEAPON_') then
+            data.inventory[i].type = 'weapon'
+        else
+            data.inventory[i].type = 'item'
+        end
+    end
+    exports["tgiann-inventory"]:RegisterShop(shopName, data.inventory)
+end
+
 RegisterNetEvent('p_bridge/inventory/openInventory', function(invType, data)
     if invType == 'stash' then
         if data.owner then
