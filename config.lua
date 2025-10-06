@@ -144,6 +144,7 @@ Config.Society = 'auto'
     RxBanking - RxBanking
     vms_bossmenu - VMS Boss Menu
     kartik-banking - Kartik Banking
+    nfs-banking - NFS Banking
     none - no society system
 
     -- open ticket on our discord if you want to add your society system [discord.gg/piotreqscripts]
