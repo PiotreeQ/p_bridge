@@ -86,7 +86,7 @@ Bridge.Inventory.createShop = function(shopName, data)
         if not data.inventory[i].amount then
             data.inventory[i].amount = 9999
         end
-
+        
         if not data.inventory[i].slot then
             data.inventory[i].slot = i
         end
