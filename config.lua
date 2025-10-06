@@ -177,6 +177,7 @@ Config.Fuel = 'auto'
     lc_fuel - lc_fuel
     cdn-fuel - cdn-fuel
     rcore_fuel - rcore_fuel
+    x-fuel - CodeM Fuel
     none - no fuel system
     
     -- open ticket on our discord if you want to add your fuel system [discord.gg/piotreqscripts]
