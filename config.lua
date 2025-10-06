@@ -98,6 +98,7 @@ Config.CarKeys = 'auto'
     mk_vehiclekeys - MK Vehicle Keys
     cd_garage - Codesign Garage Keys
     filo_vehiclekey - Filo Vehicle Key
+    is_vehiclekeys - Inside Scripts Vehicle Keys
     none - no car keys system
 
     -- open ticket on our discord if you want to add your car keys system [discord.gg/piotreqscripts]
@@ -156,6 +157,7 @@ Config.BossMenu = 'auto'
     okokBossMenu - Okok Boss Menu
     vms_bossmenu - VMS Boss Menu
     xnr-bossmenu - Xandir Boss Menu
+    codem-bossmenu - CodeM Boss Menu
     standalone - no boss menu system
 
     -- open ticket on our discord if you want to add your boss menu system [discord.gg/piotreqscripts]
