@@ -99,6 +99,7 @@ Config.CarKeys = 'auto'
     cd_garage - Codesign Garage Keys
     filo_vehiclekey - Filo Vehicle Key
     is_vehiclekeys - Inside Scripts Vehicle Keys
+    vehicles_keys - Jaksam Vehicle Keys
     none - no car keys system
 
     -- open ticket on our discord if you want to add your car keys system [discord.gg/piotreqscripts]
