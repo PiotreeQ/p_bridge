@@ -76,8 +76,9 @@ Config.Appearance = 'auto'
     bl_appearance - Bl Appearance
     crm-appearance - CRM Appearance
     tgiann-clothing - Tgiann Clothing
-    esx_skin = ESX Skin
-    qb-clothing = QBCore Clothing
+    esx_skin - ESX Skin
+    qb-clothing - QBCore Clothing
+    qs-appearance - Quasar Appearance
 
     -- open ticket on our discord if you want to add your appearance system [discord.gg/piotreqscripts]
 ]]
@@ -129,6 +130,7 @@ Config.ProgressBar = 'auto'
     ox_lib - ox_lib Progress Bar [recommended]
     esx - ESX Progress Bar
     qb - QB Progress Bar
+    qs-interface - Quasar Interface Progress Bar
 
     -- open ticket on our discord if you want to add your progress bar system [discord.gg/piotreqscripts]
 ]]
@@ -178,6 +180,7 @@ Config.Fuel = 'auto'
     cdn-fuel - cdn-fuel
     rcore_fuel - rcore_fuel
     x-fuel - CodeM Fuel
+    qs-fuelstations - Quasar Fuel Stations
     none - no fuel system
     
     -- open ticket on our discord if you want to add your fuel system [discord.gg/piotreqscripts]
