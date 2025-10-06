@@ -115,6 +115,7 @@ Config.Dispatch = 'auto'
     tk_dispatch - TK Dispatch
     rcore_dispatch - RCore Dispatch
     lb-tablet - LB-Tablet Dispatch
+    kartik-mdt - Kartik MDT Dispatch
 
     -- open ticket on our discord if you want to add your dispatch system [discord.gg/piotreqscripts]
 ]]
@@ -142,6 +143,7 @@ Config.Society = 'auto'
     okokBanking - Okok Banking
     RxBanking - RxBanking
     vms_bossmenu - VMS Boss Menu
+    kartik-banking - Kartik Banking
     none - no society system
 
     -- open ticket on our discord if you want to add your society system [discord.gg/piotreqscripts]
