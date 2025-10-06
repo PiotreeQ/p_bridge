@@ -23,5 +23,5 @@ Bridge.Dispatch = {}
 --@param data.notify?: number [notify time]
 
 Bridge.Dispatch.SendAlert = function(data)
-    TriggerServerEvent('p_ambulancejob/server/dispatch/sendAlert', data)
+    TriggerServerEvent('p_bridge/server/dispatch/sendAlert', data)
 end
