@@ -7,7 +7,7 @@ while not Bridge do
 end
 
 if Config.Debug then
-    lib.print.info('[Notify] Loaded: lb-tablet')
+    lib.print.info('[Dispatch] Loaded: lb-tablet')
 end
 
 Bridge.Dispatch = {}
@@ -23,5 +23,7 @@ Bridge.Dispatch = {}
 --@param data.notify?: number [notify time]
 
 Bridge.Dispatch.SendAlert = function(data)
+    local coords = GetEntityCoords(cache.ped)
+    data.street = GetStreetNameFromHashKey(GetStreetNameAtCoord(coords.x, coords.y, coords.z))
     TriggerServerEvent('p_bridge/server/dispatch/sendAlert', data)
 end

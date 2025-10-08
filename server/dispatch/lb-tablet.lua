@@ -25,14 +25,18 @@ Bridge.Dispatch = {}
 Bridge.Dispatch.SendAlert = function(playerId, data)
     local plyPed = GetPlayerPed(playerId)
     local plyCoords = GetEntityCoords(plyPed)
+    if data.priority == 'normal' then
+        data.priority = 'low'
+    end
+
     exports["lb-tablet"]:AddDispatch({
         priority = data.priority or 'low',
         code = data.code,
         title = data.title,
         description = ('%s - %s'):format(data.code, data.title),
-        location = {coords = vec2(plyCoords.x, plyCoords.y)},
+        location = {label = data.street or '', coords = vec2(plyCoords.x, plyCoords.y)},
         time = data.time * 60,
-        job = data.job,
+        job = data.job and data.job[1] or 'police',
         blip = {
             sprite = data.blip?.sprite or 1,
             size = data.blip?.scale or 1.2,

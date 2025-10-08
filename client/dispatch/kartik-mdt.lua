@@ -7,7 +7,7 @@ while not Bridge do
 end
 
 if Config.Debug then
-    lib.print.info('[Notify] Loaded: kartik-mdt')
+    lib.print.info('[Dispatch] Loaded: kartik-mdt')
 end
 
 Bridge.Dispatch = {}
