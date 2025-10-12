@@ -30,7 +30,6 @@ Config.Target = 'auto'
     auto - will try to detect target system automatically
     qb-target - QBCore Target
     ox_target - OX Target [recommended]
-    standalone - Standalone (no target, script will try to use markers, doesnt work everytime!)
 
     -- open ticket on our discord if you want to add your target system [discord.gg/piotreqscripts]
 ]]
@@ -62,6 +61,7 @@ Config.Notify = 'auto'
     qbcore - QBCore Notifications
     brutal - Brutal Notifications
     okok - Okok Notifications
+    is_ui - Inside Scripts Notifications
 
     -- open ticket on our discord if you want to add your notification system [discord.gg/piotreqscripts]
 ]]

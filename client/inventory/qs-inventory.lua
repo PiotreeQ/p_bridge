@@ -39,7 +39,10 @@ Bridge.Inventory.openInventory = function(invType, data)
                 end
             end
         end
-        TriggerServerEvent("inventory:server:OpenInventory", "shop", data.type..'_'..data.id, data)
+        TriggerServerEvent("inventory:server:OpenInventory", "shop", data.type..'_'..data.id, {
+            label = data.label,
+            items = data.items
+        })
     elseif invType == 'player' then
         TriggerServerEvent("inventory:server:OpenInventory", "otherplayer", data)
         TriggerEvent("inventory:client:SetCurrentStash", "otherplayer")

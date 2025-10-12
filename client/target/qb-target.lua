@@ -17,11 +17,6 @@ Bridge.Target.toggleTarget = function(state)
     exports['qb-target']:AllowTargeting(state)
 end
 
---@param options: table [options for the target, see ox_target documentation for details]
--- qb-target doesn't have export for global option so i used box zone, if u have better solution please contact me on discord :)
-
-local globalOptions = {}
-
 Bridge.Target.addGlobal = function(options)
     return 'textUI' -- dont touch it
 end

@@ -20,10 +20,9 @@ end)
 
 AddEventHandler('onClientResourceStart', function(resourceName)
     if resourceName ~= cache.resource then return end
-    if not QBCore.PlayerData then return end 
 
     Citizen.Wait(1000)
-    TriggerEvent('p_bridge/client/setPlayerData', QBCore.PlayerData)
+    TriggerEvent('p_bridge/client/setPlayerData', QBCore.Functions.GetPlayerData())
 end)
 
 Bridge.Framework = {}
