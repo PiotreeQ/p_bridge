@@ -51,25 +51,26 @@ Bridge.Appearance.convertSkinFormat = function(skinData)
         lib.print.error('[Appearance] Skin data is nil or not a table!')
         return
     end
-    
+
     return {
-        ["hat"] = { item = skin.helmet_1 or 0, texture = skin.helmet_2 or 0 },
-        ["mask"] = { item = skin.mask_1 or 0, texture = skin.mask_2 or 0 },
-        ["glass"] = { item = skin.glasses_1 or 0, texture = skin.glasses_2 or 0 },
-        ["ear"] = { item = skin.ears_1 or 0, texture = skin.ears_2 or 0 },
-        ["t-shirt"] = { item = skin.tshirt_1 or 0, texture = skin.tshirt_2 or 0 },
-        ["torso2"] = { item = skin.torso_1 or 0, texture = skin.torso_2 or 0 },
-        ["decals"] = { item = skin.decals_1 or 0, texture = skin.decals_2 or 0 },
-        ["arms"] = { item = skin.arms or 0, texture = 0 },
-        ["pants"] = { item = skin.pants_1 or 0, texture = skin.pants_2 or 0 },
-        ["shoes"] = { item = skin.shoes_1 or 0, texture = skin.shoes_2 or 0 },
-        ["bag"] = { item = skin.bags_1 or 0, texture = skin.bags_2 or 0 },
-        ["vest"] = { item = skin.bproof_1 or 0, texture = skin.bproof_2 or 0 },
-        ["accessory"] = { item = skin.chain_1 or 0, texture = skin.chain_2 or 0 },
-        ["watch"] = { item = skin.watches_1 or 0, texture = skin.watches_2 or 0 },
-        ["bracelet"] = { item = skin.bracelets_1 or 0, texture = skin.bracelets_2 or 0 }
+        ["hat"] = { item = skinData.helmet_1 or 0, texture = skinData.helmet_2 or 0 },
+        ["mask"] = { item = skinData.mask_1 or 0, texture = skinData.mask_2 or 0 },
+        ["glass"] = { item = skinData.glasses_1 or 0, texture = skinData.glasses_2 or 0 },
+        ["ear"] = { item = skinData.ears_1 or 0, texture = skinData.ears_2 or 0 },
+        ["t-shirt"] = { item = skinData.tshirt_1 or 0, texture = skinData.tshirt_2 or 0 },
+        ["torso2"] = { item = skinData.torso_1 or 0, texture = skinData.torso_2 or 0 },
+        ["decals"] = { item = skinData.decals_1 or 0, texture = skinData.decals_2 or 0 },
+        ["arms"] = { item = skinData.arms or 0, texture = 0 },
+        ["pants"] = { item = skinData.pants_1 or 0, texture = skinData.pants_2 or 0 },
+        ["shoes"] = { item = skinData.shoes_1 or 0, texture = skinData.shoes_2 or 0 },
+        ["bag"] = { item = skinData.bags_1 or 0, texture = skinData.bags_2 or 0 },
+        ["vest"] = { item = skinData.bproof_1 or 0, texture = skinData.bproof_2 or 0 },
+        ["accessory"] = { item = skinData.chain_1 or 0, texture = skinData.chain_2 or 0 },
+        ["watch"] = { item = skinData.watches_1 or 0, texture = skinData.watches_2 or 0 },
+        ["bracelet"] = { item = skinData.bracelets_1 or 0, texture = skinData.bracelets_2 or 0 }
     }
 end
+
 
 Bridge.Appearance.setPlayerSkin = function(skinData)
     if not skinData then
@@ -98,7 +99,7 @@ Bridge.Appearance.setPlayerClothing = function(clothingData)
         clothingData = json.decode(clothingData)
     end
 
-    TriggerEvent('qb-clothing:client:loadOutfit', {outfitData = clothingData})
+    TriggerEvent('qb-clothing:client:loadOutfit', { outfitData = clothingData })
 
     if Config.Debug then
         lib.print.info('[Appearance] Set player clothing:', clothingData)
