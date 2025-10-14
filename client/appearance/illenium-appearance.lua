@@ -31,29 +31,30 @@ Bridge.Appearance.convertSkinFormat = function(skinData)
         lib.print.error('[Appearance] Skin data is nil or not a table!')
         return
     end
-    
+
     return {
         components = {
-            {component_id = 1, drawable = skin.mask_1 or 0, texture = skin.mask_2 or 0},      -- Mask
-            {component_id = 3, drawable = skin.torso_1 or 0, texture = skin.torso_2 or 0},    -- Torso
-            {component_id = 4, drawable = skin.pants_1 or 0, texture = skin.pants_2 or 0},    -- Pants
-            {component_id = 5, drawable = skin.bags_1 or 0, texture = skin.bags_2 or 0},      -- Bag
-            {component_id = 6, drawable = skin.shoes_1 or 0, texture = skin.shoes_2 or 0},    -- Shoes
-            {component_id = 7, drawable = skin.accessory_1 or 0, texture = skin.accessory_2 or 0}, -- Accessories
-            {component_id = 8, drawable = skin.tshirt_1 or 0, texture = skin.tshirt_2 or 0},  -- Undershirt
-            {component_id = 9, drawable = skin.armor_1 or 0, texture = skin.armor_2 or 0},    -- Body Armor
-            {component_id = 10, drawable = skin.decals_1 or 0, texture = skin.decals_2 or 0}, -- Decals
-            {component_id = 11, drawable = skin.torso_1 or 0, texture = skin.torso_2 or 0},   -- Top
+            { component_id = 1,  drawable = skinData.mask_1 or 0,      texture = skinData.mask_2 or 0 },   -- Mask
+            { component_id = 3,  drawable = skinData.torso_1 or 0,     texture = skinData.torso_2 or 0 },  -- Torso
+            { component_id = 4,  drawable = skinData.pants_1 or 0,     texture = skinData.pants_2 or 0 },  -- Pants
+            { component_id = 5,  drawable = skinData.bags_1 or 0,      texture = skinData.bags_2 or 0 },   -- Bag
+            { component_id = 6,  drawable = skinData.shoes_1 or 0,     texture = skinData.shoes_2 or 0 },  -- Shoes
+            { component_id = 7,  drawable = skinData.accessory_1 or 0, texture = skinData.accessory_2 or 0 }, -- Accessories
+            { component_id = 8,  drawable = skinData.tshirt_1 or 0,    texture = skinData.tshirt_2 or 0 }, -- Undershirt
+            { component_id = 9,  drawable = skinData.armor_1 or 0,     texture = skinData.armor_2 or 0 },  -- Body Armor
+            { component_id = 10, drawable = skinData.decals_1 or 0,    texture = skinData.decals_2 or 0 }, -- Decals
+            { component_id = 11, drawable = skinData.torso_1 or 0,     texture = skinData.torso_2 or 0 },  -- Top
         },
         props = {
-            {prop_id = 0, drawable = skin.helmet_1 or -1, texture = skin.helmet_2 or 0},      -- Helmet/Hat
-            {prop_id = 1, drawable = skin.glasses_1 or -1, texture = skin.glasses_2 or 0},    -- Glasses
-            {prop_id = 2, drawable = skin.ears_1 or -1, texture = skin.ears_2 or 0},          -- Ears
-            {prop_id = 6, drawable = skin.watches_1 or -1, texture = skin.watches_2 or 0},    -- Watches
-            {prop_id = 7, drawable = skin.bracelets_1 or -1, texture = skin.bracelets_2 or 0} -- Bracelets
+            { prop_id = 0, drawable = skinData.helmet_1 or -1,    texture = skinData.helmet_2 or 0 }, -- Helmet/Hat
+            { prop_id = 1, drawable = skinData.glasses_1 or -1,   texture = skinData.glasses_2 or 0 }, -- Glasses
+            { prop_id = 2, drawable = skinData.ears_1 or -1,      texture = skinData.ears_2 or 0 },   -- Ears
+            { prop_id = 6, drawable = skinData.watches_1 or -1,   texture = skinData.watches_2 or 0 }, -- Watches
+            { prop_id = 7, drawable = skinData.bracelets_1 or -1, texture = skinData.bracelets_2 or 0 } -- Bracelets
         }
     }
 end
+
 
 Bridge.Appearance.setPlayerSkin = function(skinData)
     if not skinData then

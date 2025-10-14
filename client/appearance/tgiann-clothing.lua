@@ -37,18 +37,29 @@ Bridge.Appearance.convertSkinFormat = function(skinData)
         lib.print.error('[Appearance] Skin data is nil or not a table!')
         return
     end
-    
+
     local restricted = {
-        ['helmet'] = true, ['mask'] = true, ['glasses'] = true, ['ears'] = true,
-        ['tshirt'] = true, ['torso'] = true, ['decals'] = true, ['arms'] = true,
-        ['pants'] = true, ['shoes'] = true, ['bags'] = true, ['bproof'] = true,
-        ['decals'] = true, ['watches'] = true, ['bracelet'] = true, ['chain'] = true
+        ['helmet'] = true,
+        ['mask'] = true,
+        ['glasses'] = true,
+        ['ears'] = true,
+        ['tshirt'] = true,
+        ['torso'] = true,
+        ['arms'] = true,
+        ['pants'] = true,
+        ['shoes'] = true,
+        ['bags'] = true,
+        ['bproof'] = true,
+        ['decals'] = true,
+        ['watches'] = true,
+        ['bracelet'] = true,
+        ['chain'] = true
     }
     local convertedSkin = {}
-    for k, v in pairs(skin) do
+    for k, v in pairs(skinData) do
         for name, _ in pairs(restricted) do
             if k:find(name) then
-                table.insert(convertedSkin, {name = k, value = v})
+                table.insert(convertedSkin, { name = k, value = v })
                 break
             end
         end
@@ -84,10 +95,22 @@ Bridge.Appearance.setPlayerClothing = function(clothingData)
     end
 
     local restricted = {
-        ['helmet'] = true, ['mask'] = true, ['glasses'] = true, ['ears'] = true,
-        ['tshirt'] = true, ['torso'] = true, ['decals'] = true, ['arms'] = true,
-        ['pants'] = true, ['shoes'] = true, ['bags'] = true, ['bproof'] = true,
-        ['decals'] = true, ['watches'] = true, ['bracelet'] = true, ['chain'] = true
+        ['helmet'] = true,
+        ['mask'] = true,
+        ['glasses'] = true,
+        ['ears'] = true,
+        ['tshirt'] = true,
+        ['torso'] = true,
+        ['decals'] = true,
+        ['arms'] = true,
+        ['pants'] = true,
+        ['shoes'] = true,
+        ['bags'] = true,
+        ['bproof'] = true,
+        ['decals'] = true,
+        ['watches'] = true,
+        ['bracelet'] = true,
+        ['chain'] = true
     }
     local skinData = {}
     for k, v in pairs(clothingData) do
