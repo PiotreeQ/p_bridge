@@ -38,13 +38,17 @@ end
 --@return xPlayer: table [player object]
 Bridge.Framework.getPlayerById = function(playerId)
     if not playerId then
-        lib.print.error('Player ID is required to fetch player data.')
+        if Config.Debug then
+            lib.print.error('Player ID is required to fetch player data.')
+        end
         return nil
     end
 
     local xPlayer = exports['qbx_core']:GetPlayer(playerId)
     if not xPlayer then
-        lib.print.error(('No player found with ID: %s'):format(playerId))
+        if Config.Debug then
+            lib.print.error(('No player found with ID: %s'):format(playerId))
+        end
         return nil
     end
 
@@ -57,7 +61,9 @@ end
 --@return playerId: number [player ID]
 Bridge.Framework.getPlayerId = function(uniqueId)
     if not uniqueId then
-        lib.print.error('Unique ID is required to fetch player ID.')
+        if Config.Debug then
+            lib.print.error('Unique ID is required to fetch player ID.')
+        end
         return nil
     end
 
@@ -73,13 +79,17 @@ end
 --@return xPlayer: table [player object]
 Bridge.Framework.getPlayerByUniqueId = function(uniqueId)
     if not uniqueId then
-        lib.print.error('Unique ID is required to fetch player data.')
+        if Config.Debug then
+            lib.print.error('Unique ID is required to fetch player data.')
+        end
         return nil
     end
 
     local xPlayer = exports['qbx_core']:GetPlayerByCitizenId(uniqueId)
     if not xPlayer then
-        lib.print.error(('No player found with Unique ID: %s'):format(uniqueId))
+        if Config.Debug then
+            lib.print.error(('No player found with unique ID: %s'):format(uniqueId))
+        end
         return nil
     end
 

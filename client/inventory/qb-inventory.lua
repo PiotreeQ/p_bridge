@@ -24,7 +24,25 @@ Bridge.Inventory.openInventory = function(invType, data)
             TriggerServerEvent('p_bridge/inventory/openInventory', invType, data)
         end
     elseif invType == 'shop' then
-        TriggerServerEvent('p_bridge/inventory/openInventory', invType, data)
+        if not data.label then
+            data.label = data.type
+        end
+        
+        if data.items then
+            for i = 1, #data.items, 1 do
+                data.items[i].slot = i
+                if not data.items[i].amount then
+                    data.items[i].amount = 1000
+                end
+                if not data.items[i].price then
+                    data.items[i].price = 0
+                end
+            end
+        end
+        TriggerServerEvent("inventory:server:OpenInventory", "shop", data.type, {
+            label = data.label,
+            items = data.items
+        })
     elseif invType == 'player' then
         TriggerServerEvent("inventory:server:OpenInventory", "otherplayer", data)
         TriggerEvent("inventory:client:SetCurrentStash", "otherplayer")

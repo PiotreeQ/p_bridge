@@ -72,7 +72,7 @@ Bridge.Appearance.setPlayerSkin = function(skinData)
     end
 end
 
-Bridge.Appearance.setPlayerClothing = function(clothingData)
+Bridge.Appearance.setPlayerClothing = function(clothingData, clothesType)
     if not clothingData then
         lib.print.error('[Appearance] Clothing data is nil or empty!')
         return
