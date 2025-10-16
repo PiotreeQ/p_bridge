@@ -29,6 +29,14 @@ Bridge.Dispatch.SendAlert = function(playerId, data)
         data.priority = 'low'
     end
 
+    if data.priority == 'risk' then
+        data.priority = 'high'
+    end
+
+    if data.priority ~= 'low' and data.priority ~= 'medium' and data.priority ~= 'high' then
+        data.priority = 'low'
+    end
+
     exports["lb-tablet"]:AddDispatch({
         priority = data.priority or 'low',
         code = data.code,

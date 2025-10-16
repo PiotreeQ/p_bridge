@@ -32,7 +32,7 @@ Bridge.Dispatch.SendAlert = function(playerId, data)
         icon = data.icon or 'fa-solid fa-bell',
         priority = data.priority == 'high' and 1 or 2,
         coords = vector3(plyCoords.x, plyCoords.y, plyCoords.z),
-        alertTime = data.time * 60,
+        alertTime = data.time,
         alert = {
             radius = 0,
             sprite = data.blip?.sprite or 1,
