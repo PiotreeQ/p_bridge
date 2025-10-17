@@ -37,5 +37,6 @@ server_scripts {
 
 shared_scripts {
     'config.lua',
-    '@ox_lib/init.lua'
+    '@ox_lib/init.lua',
+    '@p_bridge/init.lua',
 }
