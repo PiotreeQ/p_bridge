@@ -13,5 +13,9 @@ end
 Bridge.Notify = {}
 
 Bridge.Notify.showNotify = function(message, type)
-    exports['okokNotify']:Alert('okokNotify', message, 5000, type)
+    if type == 'inform' then
+        type = 'info'
+    end
+    
+    exports['okokNotify']:Alert('', message, 5000, type)
 end

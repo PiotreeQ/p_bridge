@@ -30,6 +30,7 @@ Config.Target = 'auto'
     auto - will try to detect target system automatically
     qb-target - QBCore Target
     ox_target - OX Target [recommended]
+    textui - TextUI [available but not stable yet!, you can test it on your own risk]
 
     -- open ticket on our discord if you want to add your target system [discord.gg/piotreqscripts]
 ]]
@@ -151,6 +152,7 @@ Config.Society = 'auto'
     nfs-banking - NFS Banking
     nfs-billing - NFS Billing
     crm-banking - Corem Banking
+    snipe-banking - Snipe Banking
     none - no society system
 
     -- open ticket on our discord if you want to add your society system [discord.gg/piotreqscripts]
