@@ -13,7 +13,7 @@ end
 Bridge.Society = {}
 
 Bridge.Society.addMoney = function(playerId, jobName, amount)
-    local result = exports['snipe-banking']:snipe-banking(jobName, amount)
+    local result = exports['snipe-banking']:AddMoneyToAccount(jobName, amount)
     return result
 end
 
@@ -23,7 +23,7 @@ Bridge.Society.removeMoney = function(playerId, jobName, amount)
 end
 
 Bridge.Society.getMoney = function(playerId, jobName)
-    local money = exports['snipe-banking']:RemoveMoneyFromAccount(jobName)
+    local money = exports['snipe-banking']:GetAccountBalance(jobName)
     if money then
         return money
     end
