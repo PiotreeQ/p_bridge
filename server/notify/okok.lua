@@ -13,5 +13,5 @@ end
 Bridge.Notify = {}
 
 Bridge.Notify.showNotify = function(playerId, message, type)
-    TriggerClientEvent('okokNotify:Alert', playerId, 'okokNotify', message, 5000, type)
+    TriggerClientEvent('okokNotify:Alert', playerId, '', message, 5000, type)
 end
