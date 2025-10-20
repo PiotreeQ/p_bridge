@@ -22,3 +22,7 @@ Bridge.Notify.showNotify = function(message, type)
         type = type,
     })
 end
+
+RegisterNetEvent('p_bridge/notify', function(message, type)
+    Bridge.Notify.showNotify(message, type)
+end)
