@@ -1,0 +1,17 @@
+if (Config.Fuel == 'auto' and not checkResource('okokGasStation')) or (Config.Fuel ~= 'auto' and Config.Fuel ~= 'okokGasStation') then
+    return
+end
+
+while not Bridge do
+    Citizen.Wait(0)
+end
+
+if Config.Debug then
+    lib.print.info('[Fuel] Loaded: okokGasStation')
+end
+
+Bridge.Fuel = {}
+
+Bridge.Fuel.SetFuel = function(vehicle, fuel)
+    exports['okokGasStation']:SetFuel(vehicle, fuel)
+end
