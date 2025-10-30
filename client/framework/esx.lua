@@ -25,9 +25,13 @@ end)
 
 AddEventHandler('onClientResourceStart', function(resourceName)
     if resourceName ~= cache.resource then return end
-    if not ESX.PlayerData then return end 
+    ESX.PlayerData = ESX.GetPlayerData()
 
     Citizen.Wait(1000)
+    if not ESX.IsPlayerLoaded() then
+        return
+    end
+    
     TriggerEvent('p_bridge/client/setPlayerData', ESX.PlayerData)
 end)
 

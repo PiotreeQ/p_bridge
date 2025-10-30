@@ -1,13 +1,5 @@
-if (Config.Dispatch == 'auto' and not checkResource('tk_dispatch')) or (Config.Dispatch ~= 'auto' and Config.Dispatch ~= 'tk_dispatch') then
-    return
-end
-
 while not Bridge do
     Citizen.Wait(0)
-end
-
-if Config.Debug then
-    lib.print.info('[Dispatch] Loaded: tk-dispatch')
 end
 
 Bridge.Dispatch = {}
@@ -23,5 +15,7 @@ Bridge.Dispatch = {}
 --@param data.notify?: number [notify time]
 
 Bridge.Dispatch.SendAlert = function(data)
+    local coords = GetEntityCoords(cache.ped)
+    data.street = GetStreetNameFromHashKey(GetStreetNameAtCoord(coords.x, coords.y, coords.z))
     TriggerServerEvent('p_bridge/server/dispatch/sendAlert', data)
 end
