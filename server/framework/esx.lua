@@ -90,6 +90,25 @@ Bridge.Framework.getPlayerByUniqueId = function(uniqueId)
     return xPlayer
 end
 
+--@param citizenId: string [example '123456789']
+--@return playerData: table [offline player data]
+Bridge.Framework.getOfflinePlayerByCitizenId = function(citizenId)
+    local success, result = pcall(function()
+        return MySQL.single.await('SELECT * FROM users WHERE ssn = ?', {citizenId})
+    end)
+
+    -- in case if someone use id column as unique id :)
+    if not success then
+        local success2, result2 = pcall(function()
+            return MySQL.single.await('SELECT * FROM users WHERE id = ?', {citizenId})
+        end)
+
+        return result2
+    end
+
+    return result
+end
+
 --@param playerId: number|string [existing player id or unique identifier]
 --@return uniqueId: string [example 'char1:123456', for esx it will be identifier, for qb/qbox it will be citizenid]
 Bridge.Framework.getUniqueId = function(playerId)
@@ -102,6 +121,13 @@ Bridge.Framework.getUniqueId = function(playerId)
     end
 
     return xPlayer.identifier
+end
+
+--@param plate: string [vehicle plate]
+--@return vehicleData: table [vehicle data from database]
+Bridge.Framework.getVehicleByPlate = function(plate)
+    local result = MySQL.single.await('SELECT * FROM owned_vehicles WHERE plate = ?', {plate})
+    return result
 end
 
 --@param playerId: number|string [existing player id or unique identifier]

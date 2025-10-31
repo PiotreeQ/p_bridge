@@ -48,6 +48,7 @@ Config.Inventory = 'auto'
     core_inventory - Core Inventory
     ak47_inventory - Ak47 Inventory
     origen_inventory - Origen Inventory
+    jaksam_inventory - Jaksam Inventory
     standalone - Standalone framework inventory
 
     -- open ticket on our discord if you want to add your inventory system [discord.gg/piotreqscripts]
@@ -143,6 +144,7 @@ Config.Society = 'auto'
     esx_addonaccount - ESX Addon Account [recommended for ESX]
     p_banking - pScripts Banking [recommended]
     qb-banking - QBCore Banking
+    qs-banking - Quasar Banking
     nass_bossmenu - Nass Boss Menu
     Renewed-Banking - Renewed Banking
     okokBanking - Okok Banking
@@ -184,6 +186,7 @@ Config.Fuel = 'auto'
     cdn-fuel - cdn-fuel
     rcore_fuel - rcore_fuel
     x-fuel - CodeM Fuel
+    myFuel - myFuel
     qs-fuelstations - Quasar Fuel Stations
     none - no fuel system
     
