@@ -24,6 +24,14 @@ Config.Framework = 'auto'
     -- open ticket on our discord if you want to add your framework [discord.gg/piotreqscripts]
 ]]
 
+Config.FrameworkUniqueId = {
+    ['esx'] = 'id',
+    ['qb'] = 'citizenid',
+    ['qbox'] = 'citizenid',
+    ['ox'] = 'charId',
+    ['nd'] = 'charid',
+}
+
 --@param Config.Target: string [set which target system you are using]
 Config.Target = 'auto'
 --[[

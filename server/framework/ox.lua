@@ -20,6 +20,10 @@ end)
 
 Bridge.Framework = {}
 
+Bridge.Framework.frameworkUniqueId = function()
+    return Config.FrameworkUniqueId['ox']
+end
+
 --@param playerId: number [existing player id]
 --@return xPlayer: table [player object]
 Bridge.Framework.getPlayerById = function(playerId)

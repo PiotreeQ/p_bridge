@@ -16,6 +16,10 @@ end)
 
 Bridge.Framework = {}
 
+Bridge.Framework.frameworkUniqueId = function()
+    return Config.FrameworkUniqueId['qbox']
+end
+
 Bridge.Framework.getJobs = function()
     local jobsData = {}
     local jobs = QBCore.Shared.Jobs

@@ -18,6 +18,10 @@ end)
 
 Bridge.Framework = {}
 
+Bridge.Framework.frameworkUniqueId = function()
+    return Config.FrameworkUniqueId['esx']
+end
+
 Bridge.Framework.getJobs = function()
     local jobsData = {}
     local job_grades = MySQL.query.await('SELECT * FROM job_grades')
