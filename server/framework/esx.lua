@@ -22,6 +22,17 @@ Bridge.Framework.frameworkUniqueId = function()
     return Config.FrameworkUniqueId['esx']
 end
 
+Bridge.Framework.getJobLabels = function()
+    local jobLabels = {}
+    local jobs = MySQL.query.await('SELECT * FROM jobs')
+    for k, v in pairs(jobs) do
+        if not jobLabels[v.name] then
+            jobLabels[v.name] = v.label
+        end
+    end
+    return jobLabels
+end
+
 Bridge.Framework.getJobs = function()
     local jobsData = {}
     local job_grades = MySQL.query.await('SELECT * FROM job_grades')
@@ -97,20 +108,7 @@ end
 --@param citizenId: string [example '123456789']
 --@return playerData: table [offline player data]
 Bridge.Framework.getOfflinePlayerByCitizenId = function(citizenId)
-    local success, result = pcall(function()
-        return MySQL.single.await('SELECT * FROM users WHERE ssn = ?', {citizenId})
-    end)
-
-    -- in case if someone use id column as unique id :)
-    if not success then
-        local success2, result2 = pcall(function()
-            return MySQL.single.await('SELECT * FROM users WHERE id = ?', {citizenId})
-        end)
-
-        return result2
-    end
-
-    return result
+    return MySQL.single.await('SELECT * FROM users WHERE '..Config.FrameworkUniqueId['esx']..' = ?', {citizenId})
 end
 
 --@param playerId: number|string [existing player id or unique identifier]

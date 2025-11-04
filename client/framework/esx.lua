@@ -60,5 +60,5 @@ end
 
 --@return name: string [example 'John Doe']
 Bridge.Framework.getPlayerName = function()
-    return ('%s %s'):format(ESX.PlayerData?.firstname, ESX.PlayerData?.lastname)
+    return ('%s %s'):format(ESX.PlayerData?.firstName, ESX.PlayerData?.lastName)
 end

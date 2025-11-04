@@ -25,6 +25,20 @@ Bridge.Dispatch = {}
 Bridge.Dispatch.SendAlert = function(playerId, data)
     local plyPed = GetPlayerPed(playerId)
     local plyCoords = GetEntityCoords(plyPed)
+    local alertJobs = {}
+    if data.job then
+        if type(data.job) == 'string' then
+            alertJobs[data.job] = true
+        elseif type(data.job) == 'table' then
+            for k, v in pairs(data.job) do
+                if type(v) == 'string' then
+                    alertJobs[v] = true
+                elseif type(k) == 'string' and type(v) =='boolean' then
+                    alertJobs[k] = v
+                end
+            end
+        end
+    end
     local dispatchData = {
         title = data.title,
         code = data.code,
@@ -40,7 +54,7 @@ Bridge.Dispatch.SendAlert = function(playerId, data)
             scale = data.blip?.scale or 1.2,
             length = data.time
         },
-        jobs = data.job or {['police'] = true}
+        jobs = data.job and alertJobs or {['police'] = true}
     }
     TriggerEvent('kartik-mdt:server:sendDispatchNotification', dispatchData)
 end
