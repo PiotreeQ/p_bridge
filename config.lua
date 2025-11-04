@@ -151,6 +151,7 @@ Config.Society = 'auto'
     auto - will try to detect society system automatically
     esx_addonaccount - ESX Addon Account [recommended for ESX]
     p_banking - pScripts Banking [recommended]
+    wasabi_banking - Wasabi Banking
     qb-banking - QBCore Banking
     qs-banking - Quasar Banking
     nass_bossmenu - Nass Boss Menu
