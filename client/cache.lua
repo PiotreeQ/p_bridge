@@ -1,7 +1,7 @@
+local plyState = LocalPlayer.state
 Citizen.CreateThread(function()
     while true do
         local playerPed = cache.ped
-        local plyState = LocalPlayer.state
         cache:set('water', IsEntityInWater(playerPed) and true or false)
         cache:set('jump', IsPedJumping(playerPed) and true or false)
         cache:set('coords', GetEntityCoords(playerPed))
