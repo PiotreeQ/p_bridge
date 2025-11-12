@@ -21,6 +21,7 @@ client_scripts {
     'client/bossmenu/*.lua',
     'client/fuel/*.lua',
     'client/dispatch/*.lua',
+    'client/textui/*.lua'
 }
 
 server_scripts {
