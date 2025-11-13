@@ -201,3 +201,12 @@ Config.Fuel = 'auto'
     
     -- open ticket on our discord if you want to add your fuel system [discord.gg/piotreqscripts]
 ]]
+
+--@param Config.TextUI: string [set which TextUI system you are using]
+Config.TextUI = 'auto'
+--[[
+    auto - will try to detect TextUI system automatically
+    ox_lib - ox_lib TextUI
+
+    -- open ticket on our discord if you want to add your TextUI system [discord.gg/piotreqscripts]
+]]
