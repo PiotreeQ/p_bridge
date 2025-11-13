@@ -72,6 +72,7 @@ Config.Notify = 'auto'
     brutal - Brutal Notifications
     okok - Okok Notifications
     is_ui - Inside Scripts Notifications
+    lation_ui - Lation UI Notifications
 
     -- open ticket on our discord if you want to add your notification system [discord.gg/piotreqscripts]
 ]]
@@ -141,6 +142,7 @@ Config.ProgressBar = 'auto'
     esx - ESX Progress Bar
     qb - QB Progress Bar
     qs-interface - Quasar Interface Progress Bar
+    lation_ui - Lation UI Progress Bar
 
     -- open ticket on our discord if you want to add your progress bar system [discord.gg/piotreqscripts]
 ]]
