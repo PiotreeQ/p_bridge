@@ -18,6 +18,53 @@ end)
 
 Bridge.Framework = {}
 
+Bridge.Framework.SetOfflineJob = function(uniqueId, jobName, jobGrade)
+    local result = MySQL.update.await('UPDATE users SET job = ?, job_grade = ? WHERE identifier = ?', {
+        jobName,
+        jobGrade,
+        uniqueId
+    })
+    return result > 0
+end
+
+Bridge.Framework.SetJob = function(playerId, jobName, jobGrade)
+    local xPlayer = ESX.GetPlayerFromId(playerId)
+    if not xPlayer then
+        if Config.Debug then
+            lib.print.error(('No player found with ID: %s\nInvoker: %s'):format(playerId, GetInvokingResource() or GetCurrentResourceName()))
+        end
+        return false
+    end
+
+    xPlayer.setJob(jobName, jobGrade)
+    return true
+end
+
+Bridge.Framework.CheckJobDuty = function(playerId)
+    local xPlayer = ESX.GetPlayerFromId(playerId)
+    if not xPlayer then
+        if Config.Debug then
+            lib.print.error(('No player found with ID: %s\nInvoker: %s'):format(playerId, GetInvokingResource() or GetCurrentResourceName()))
+        end
+        return false
+    end
+
+    return xPlayer.job?.onDuty or false
+end
+
+Bridge.Framework.SetJobDuty = function(playerId, onDuty)
+    local xPlayer = ESX.GetPlayerFromId(playerId)
+    if not xPlayer then
+        if Config.Debug then
+            lib.print.error(('No player found with ID: %s\nInvoker: %s'):format(playerId, GetInvokingResource() or GetCurrentResourceName()))
+        end
+        return false
+    end
+
+    xPlayer.setJob(xPlayer.job.name, xPlayer.job.grade, onDuty) -- newest esx version supports onDuty param
+    return true
+end
+
 Bridge.Framework.frameworkUniqueId = function()
     return Config.FrameworkUniqueId['esx']
 end
@@ -109,6 +156,12 @@ end
 --@return playerData: table [offline player data]
 Bridge.Framework.getOfflinePlayerByCitizenId = function(citizenId)
     return MySQL.single.await('SELECT * FROM users WHERE '..Config.FrameworkUniqueId['esx']..' = ?', {citizenId})
+end
+
+--@param identifier: string [example 'steam:110000112345678']
+--@return playerData: table [offline player data]
+Bridge.Framework.getOfflinePlayerByUniqueId = function(identifier)
+    return MySQL.single.await('SELECT * FROM users WHERE identifier = ?', {identifier})
 end
 
 --@param playerId: number|string [existing player id or unique identifier]

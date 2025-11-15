@@ -13,5 +13,5 @@ end
 Bridge.BossMenu = {}
 
 Bridge.BossMenu.openMenu = function()
-    ExecuteCommand('openbossmenu')
+    TriggerEvent('okokBossMenu:openBossMenu')
 end

@@ -44,6 +44,9 @@ lib.callback.register('p_bridge/server/getPlayerSkin', function(source)
         if result and result[1] then
             return json.decode(result[1].skin)
         end
+    elseif GetResourceState('rcore_clothing') == 'started' then
+        local identifier = Bridge.Framework.getUniqueId(_source)
+        return exports["rcore_clothing"]:getSkinByIdentifier(identifier)
     end
 
     return nil 

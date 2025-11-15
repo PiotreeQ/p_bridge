@@ -22,7 +22,7 @@ end
 
 Bridge.Framework.getJobs = function()
     local jobsData = {}
-    local jobs = QBCore.Shared.Jobs
+    local jobs = exports.qbx_core:GetJobs()
     for k, v in pairs(jobs) do
         if not jobsData[k] then
             jobsData[k] = {}

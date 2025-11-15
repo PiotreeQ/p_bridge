@@ -23,14 +23,7 @@ Bridge.Appearance.fetchCurrentSkin = function()
 end
 
 Bridge.Appearance.fetchDatabaseSkin = function()
-    local databaseSkin = nil
-    ESX.TriggerServerCallback('esx_skin:getPlayerSkin', function(skinData, _)
-        databaseSkin = skinData
-    end)
-
-    while databaseSkin == nil do
-        Citizen.Wait(1)
-    end
+    local databaseSkin = lib.callback.await('p_bridge/server/getPlayerSkin', false)
 
     if Config.Debug then
         lib.print.info('[Appearance] Fetched database skin:', databaseSkin)

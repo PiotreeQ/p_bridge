@@ -3,7 +3,7 @@ game 'gta5'
 author 'pScripts [tebex.pscripts.store]'
 lua54 'yes'
 description 'pScripts - Official Bridge'
-version '1.2.0'
+version '1.2.1'
 
 client_scripts {
     'client/main.lua',
