@@ -68,7 +68,7 @@ Bridge.Appearance.setPlayerClothing = function(clothingData)
         clothingData = json.decode(clothingData)
     end
 
-    exports['rcore_clothing']:setPlayerClothing(clothingData)
+    exports['rcore_clothing']:setPlayerSkin(clothingData)
 
     if Config.Debug then
         lib.print.info('[Appearance] Set player clothing:', clothingData)

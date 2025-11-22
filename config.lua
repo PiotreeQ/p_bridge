@@ -113,6 +113,7 @@ Config.CarKeys = 'auto'
     is_vehiclekeys - Inside Scripts Vehicle Keys
     vehicles_keys - Jaksam Vehicle Keys
     LifeSaver_KeySystem - LifeSaver Key System
+    Renewed-Vehiclekeys - Renewed Vehiclekeys
     none - no car keys system
 
     -- open ticket on our discord if you want to add your car keys system [discord.gg/piotreqscripts]
