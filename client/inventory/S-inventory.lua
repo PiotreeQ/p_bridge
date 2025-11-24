@@ -2,6 +2,8 @@ if (Config.Inventory == 'auto' and not checkResource('S-Inventory')) or (Config.
     return
 end
 
+local ESX = exports['es_extended']:getSharedObject()
+
 while not Bridge do
     Citizen.Wait(0)
 end
@@ -23,7 +25,14 @@ Bridge.Inventory.openInventory = function(invType, data)
 end
 
 Bridge.Inventory.getItemCount = function(itemName)
-    return exports['ox_inventory']:Search('count', itemName)
+    local items = ESX.GetPlayerData().inventory
+    if items then
+        for k, v in pairs(items) do
+            if v.name == itemName then
+                return v.count or 0
+            end
+        end
+    end
 end
 
 Bridge.Inventory.getItemData = function(itemName)
