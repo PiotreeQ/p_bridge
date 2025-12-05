@@ -106,8 +106,8 @@ Bridge.Framework.getJobs = function()
         end
         for grade, gradeData in pairs(v.grades) do
             jobsData[k][tonumber(grade)] = {
-                name = v.isboss and 'boss' or v.name,
-                label = v.name,
+                name = gradeData.isboss and 'boss' or gradeData.name,
+                label = gradeData.name,
                 grade = tonumber(grade),
             }
         end
@@ -182,7 +182,18 @@ end
 --@param citizenId: string [example '123456789']
 --@return playerData: table [offline player data]
 Bridge.Framework.getOfflinePlayerByCitizenId = function(citizenId)
-    return MySQL.single.await('SELECT * FROM players WHERE '..Config.FrameworkUniqueId['qb']..' = ?', {citizenId})
+    local row = MySQL.single.await('SELECT * FROM players WHERE '..Config.FrameworkUniqueId['qb']..' = ?', {citizenId})
+    if not row then
+        return nil
+    end
+
+    local jobData = json.decode(row.job)
+    local charInfo = json.decode(row.charinfo)
+    row.job = jobData.name
+    row.job_grade = jobData.grade.level
+    row.firstname = charInfo.firstname
+    row.lastname = charInfo.lastname
+    return row
 end
 
 --@param identifier: string [example 'steam:110000112345678']
