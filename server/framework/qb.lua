@@ -66,6 +66,10 @@ Bridge.Framework.CheckJobDuty = function(playerId)
         return false
     end
 
+    if GetResourceState('piotreq_jobcore') == 'started' then
+        return exports['piotreq_jobcore']:isPlayerOnDuty(xPlayer.PlayerData.citizenid)
+    end
+
     return xPlayer.PlayerData.job.onduty or false
 end
 
@@ -76,6 +80,11 @@ Bridge.Framework.SetJobDuty = function(playerId, onDuty)
             lib.print.error(('No player found with ID: %s\nInvoker: %s'):format(playerId, GetInvokingResource() or GetCurrentResourceName()))
         end
         return false
+    end
+
+    if GetResourceState('piotreq_jobcore') == 'started' then
+        exports['piotreq_jobcore']:SwitchDuty(playerId, {duty = onDuty and 1 or 0})
+        return true
     end
 
     xPlayer.Functions.SetJobDuty(onDuty)
