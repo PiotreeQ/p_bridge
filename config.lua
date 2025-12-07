@@ -73,6 +73,7 @@ Config.Notify = 'auto'
     okok - Okok Notifications
     is_ui - Inside Scripts Notifications
     lation_ui - Lation UI Notifications
+    g-notifications - Groot Notifications
 
     -- open ticket on our discord if you want to add your notification system [discord.gg/piotreqscripts]
 ]]
@@ -114,6 +115,7 @@ Config.CarKeys = 'auto'
     vehicles_keys - Jaksam Vehicle Keys
     LifeSaver_KeySystem - LifeSaver Key System
     Renewed-Vehiclekeys - Renewed Vehiclekeys
+    brutal_carkeys - Brutal Car Keys
     none - no car keys system
 
     -- open ticket on our discord if you want to add your car keys system [discord.gg/piotreqscripts]
