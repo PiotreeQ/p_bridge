@@ -95,7 +95,7 @@ Bridge.Inventory.createShop = function(shopName, data)
     end
     exports['jpr-inventory']:CreateShop({
         name = shopName,
-        label = data.label,
+        label = data.label or shopName,
         slots = #data.inventory,
         items = data.inventory
     })
