@@ -1,4 +1,4 @@
-if (Config.Notify == 'auto' and not checkResource('ox_lib')) or (Config.Notify ~= 'auto' and Config.Notify ~= 'ox_lib') then
+if (Config.Notify == 'auto' and not checkResource('lation_ui')) or (Config.Notify ~= 'auto' and Config.Notify ~= 'lation_ui') then
     return
 end
 
