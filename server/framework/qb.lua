@@ -259,6 +259,7 @@ Bridge.Framework.getPlayerJob = function(playerId)
         if Config.Debug then
             lib.print.error(('No player found with ID: %s'):format(playerId))
         end
+        return nil
     end
 
     return {
