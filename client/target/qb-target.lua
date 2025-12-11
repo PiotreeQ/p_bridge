@@ -224,13 +224,17 @@ Bridge.Target.addSphereZone = function(parameters)
         end
         if parameters.options[i].groups then
             local jobs = {}
-            for k, v in pairs(parameters.options[i].groups) do
-                if type(v) == 'string' then
-                    jobs[v] = 0
-                else
-                    jobs = parameters.options[i].groups
-                    break
+            if type(parameters.options[i].groups) == 'table' then
+                for k, v in pairs(parameters.options[i].groups) do
+                    if type(v) == 'string' then
+                        jobs[v] = 0
+                    else
+                        jobs = parameters.options[i].groups
+                        break
+                    end
                 end
+            elseif type(parameters.options[i].groups) == 'string' then
+                jobs[parameters.options[i].groups] = 0
             end
             parameters.options[i].job = jobs
         end
