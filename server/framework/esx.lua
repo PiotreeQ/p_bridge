@@ -175,7 +175,7 @@ end
 
 --@param playerId: number|string [existing player id or unique identifier]
 --@return uniqueId: string [example 'char1:123456', for esx it will be identifier, for qb/qbox it will be citizenid]
-Bridge.Framework.getUniqueId = function(playerId)
+Bridge.Framework.getUniqueId = function(playerId, isCitizenId)
     local xPlayer = type(playerId) == 'number' and ESX.GetPlayerFromId(playerId) or ESX.GetPlayerFromIdentifier(playerId)
     if not xPlayer then
         if Config.Debug then
@@ -184,7 +184,7 @@ Bridge.Framework.getUniqueId = function(playerId)
         return nil
     end
 
-    return xPlayer.identifier
+    return isCitizenId and xPlayer[Config.FrameworkUniqueId['esx']] or xPlayer.identifier
 end
 
 --@param plate: string [vehicle plate]

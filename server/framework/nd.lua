@@ -87,14 +87,14 @@ end
 
 --@param playerId: number|string [existing player id or unique identifier]
 --@return uniqueId: string [example 'char1:123456', for esx it will be identifier, for qb/qbox it will be citizenid]
-Bridge.Framework.getUniqueId = function(playerId)
+Bridge.Framework.getUniqueId = function(playerId, isCitizenId)
     local xPlayer = type(playerId) == 'number' and exports["ND_Core"]:getPlayer(playerId) or Bridge.Framework.getPlayerByUniqueId(playerId)
     if not xPlayer then
         lib.print.error(('No player found with ID: %s\nInvoker: %s'):format(playerId, GetInvokingResource() or GetCurrentResourceName()))
         return nil
     end
 
-    return xPlayer.identifier
+    return isCitizenId and xPlayer[Config.FrameworkUniqueId['nd']] or xPlayer.identifier
 end
 
 --@param playerId: number|string [existing player id or unique identifier]

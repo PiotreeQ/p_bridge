@@ -77,7 +77,7 @@ end
 
 --@param playerId: number|string [existing player id or unique identifier]
 --@return uniqueId: string [example 'char1:123456', for esx it will be identifier, for qb/qbox it will be citizenid]
-Bridge.Framework.getUniqueId = function(playerId)
+Bridge.Framework.getUniqueId = function(playerId, isCitizenId)
     if not playerId then
         lib.print.error('Player ID is required to fetch unique ID.')
         return nil
@@ -89,7 +89,7 @@ Bridge.Framework.getUniqueId = function(playerId)
         return nil
     end
 
-    return player.identifier
+    return isCitizenId and player[Config.FrameworkUniqueId['ox']] or player.identifier
 end
 
 --@param playerId: number|string [existing player id or unique identifier]
