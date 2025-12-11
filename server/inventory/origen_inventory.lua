@@ -40,3 +40,15 @@ end
 Bridge.Inventory.getItemSlot = function(playerId, slot)
     return exports['origen_inventory']:getSlot(playerId, slot)
 end
+
+Bridge.Inventory.createShop = function(shopName, data)
+    while GetResourceState('origen_inventory') ~= 'started' do
+        Citizen.Wait(100)
+    end
+    exports['origen_inventory']:createShop(shopName, {
+        label = data.name,
+        slots = #data.inventory,
+        items = data.inventory,
+        locations = data.locations,
+    })
+end
