@@ -15,7 +15,10 @@ Bridge.Dispatch = {}
 --@param data.notify?: number [notify time]
 
 Bridge.Dispatch.SendAlert = function(data)
-    local coords = GetEntityCoords(cache.ped)
-    data.street = GetStreetNameFromHashKey(GetStreetNameAtCoord(coords.x, coords.y, coords.z))
+    if not data.coords then
+        data.coords = GetEntityCoords(cache.ped)
+    end
+
+    data.street = GetStreetNameFromHashKey(GetStreetNameAtCoord(data.coords.x, data.coords.y, data.coords.z))
     TriggerServerEvent('p_bridge/server/dispatch/sendAlert', data)
 end
