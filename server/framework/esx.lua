@@ -184,7 +184,19 @@ Bridge.Framework.getUniqueId = function(playerId, isCitizenId)
         return nil
     end
 
-    return isCitizenId and xPlayer[Config.FrameworkUniqueId['esx']] or xPlayer.identifier
+    if isCitizenId then
+        local citizenId = xPlayer[Config.FrameworkUniqueId['esx']]
+        if not citizenId then
+            local row = MySQL.single.await('SELECT '..Config.FrameworkUniqueId['esx']..' FROM users WHERE identifier = ?', {xPlayer.identifier})
+            if row and row[Config.FrameworkUniqueId['esx']] then
+                return row[Config.FrameworkUniqueId['esx']]
+            end
+        else
+            return citizenId
+        end
+    end
+
+    return xPlayer.identifier
 end
 
 --@param plate: string [vehicle plate]
