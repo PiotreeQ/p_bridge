@@ -16,8 +16,8 @@ Bridge.Inventory.openInventory = function(invType, data)
     exports['ox_inventory']:openInventory(invType, data)
 end
 
-Bridge.Inventory.getItemCount = function(itemName)
-    return exports['ox_inventory']:Search('count', itemName)
+Bridge.Inventory.getItemCount = function(itemName, metadata)
+    return exports['ox_inventory']:Search('count', itemName, metadata or nil)
 end
 
 Bridge.Inventory.getItemData = function(itemName)

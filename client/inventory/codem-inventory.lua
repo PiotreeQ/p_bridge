@@ -33,13 +33,38 @@ Bridge.Inventory.openInventory = function(invType, data)
 end
 
 Bridge.Inventory.getItemCount = function(itemName)
-    local items = exports['codem-inventory']:getUserInventory()
-    for _, item in pairs(items) do
-        if item.name == itemName then
-            return item.amount
+    if GetResourceState('es_extended') == 'started' then
+        local ESX = exports['es_extended']:getSharedObject()
+        local items = ESX.GetPlayerData().inventory
+        if items then
+            for k, v in pairs(items) do
+                if v.name == itemName then
+                    return v.count or 0
+                end
+            end
         end
+
+        return 0
+    elseif GetResourceState('qb-core') == 'started' then
+        local QBCore = exports['qb-core']:GetCoreObject()
+        local items = QBCore.Functions.GetPlayerData().items
+        for _, item in pairs(items) do
+            if item.name == itemName then
+                return item.amount
+            end
+        end
+
+        return 0
+    elseif GetResourceState('qbx_core') == 'started' then
+        local items = exports['qbx_core']:GetPlayerData().items
+        for _, item in pairs(items) do
+            if item.name == itemName then
+                return item.amount
+            end
+        end
+
+        return 0
     end
-    return 0
 end
 
 Bridge.Inventory.getItemData = function(itemName)
