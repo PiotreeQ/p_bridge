@@ -190,7 +190,7 @@ end
 --@param citizenId: string [example '123456789']
 --@return playerData: table [offline player data]
 Bridge.Framework.getOfflinePlayerByCitizenId = function(citizenId)
-    local row = MySQL.single.await('SELECT * FROM players WHERE '..Config.FrameworkUniqueId['qb']..' = ?', {citizenId})
+    local row = MySQL.single.await('SELECT * FROM players WHERE '..Config.FrameworkUniqueId['qbox']..' = ?', {citizenId})
     if not row then
         return nil
     end

@@ -62,3 +62,17 @@ end
 Bridge.Framework.getPlayerName = function()
     return ('%s %s'):format(ESX.PlayerData?.firstName, ESX.PlayerData?.lastName)
 end
+
+Bridge.Framework.CheckJobDuty = function()
+    if GetResourceState('piotreq_jobcore') == 'started' then
+        local dutyData = exports['piotreq_jobcore']:GetDutyData()
+        return dutyData?.status == 1
+    end
+
+    local playerJob = Bridge.Framework.fetchPlayerJob()
+    if playerJob.onDuty == nil then
+        return true
+    end
+
+    return playerJob.onDuty
+end
