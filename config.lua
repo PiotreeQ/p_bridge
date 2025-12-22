@@ -116,6 +116,7 @@ Config.CarKeys = 'auto'
     LifeSaver_KeySystem - LifeSaver Key System
     Renewed-Vehiclekeys - Renewed Vehiclekeys
     brutal_carkeys - Brutal Car Keys
+    sna-vehiclekeys - Sna Vehicle Keys
     none - no car keys system
 
     -- open ticket on our discord if you want to add your car keys system [discord.gg/piotreqscripts]
