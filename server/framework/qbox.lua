@@ -37,7 +37,7 @@ Bridge.Framework.SetOfflineJob = function(uniqueId, jobName, jobGrade)
         }
     }
     local result = MySQL.update.await('UPDATE players SET job = ? WHERE citizenid = ?', {
-        newJob,
+        json.encode(newJob),
         uniqueId
     })
     return result > 0
