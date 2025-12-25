@@ -32,7 +32,7 @@ Bridge.Dispatch.SendAlert = function(playerId, data)
         {
             data.coords or plyCoords
         },
-        , 
+        'police', 
         3000, 
         data.blip?.sprite or 1, 
         data.blip?.color or 3,
