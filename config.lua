@@ -186,6 +186,7 @@ Config.BossMenu = 'auto'
     vms_bossmenu - VMS Boss Menu
     xnr-bossmenu - Xandir Boss Menu
     codem-bossmenu - CodeM Boss Menu
+    g-bossmenu - g-bossmenu
     standalone - no boss menu system
 
     -- open ticket on our discord if you want to add your boss menu system [discord.gg/piotreqscripts]
