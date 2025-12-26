@@ -25,13 +25,25 @@ Bridge.Dispatch = {}
 Bridge.Dispatch.SendAlert = function(playerId, data)
     local plyPed = GetPlayerPed(playerId)
     local plyCoords = GetEntityCoords(plyPed)
-    exports['origen_police']:SendAlert({
-        coords = vec3(plyCoords.x, plyCoords.y, plyCoords.z),
-        title = data.title,
-        type = 'GENERAL',
-        message = data.code,
-        job = 'police',
-    })
+    if type(data.jobs) == 'table' then
+        for k, v in pairs(data.jobs) do
+            exports['origen_police']:SendAlert({
+                coords = vec3(plyCoords.x, plyCoords.y, plyCoords.z),
+                title = data.title,
+                type = 'GENERAL',
+                message = data.code,
+                job = v,
+            })
+        end
+    else
+        exports['origen_police']:SendAlert({
+            coords = vec3(plyCoords.x, plyCoords.y, plyCoords.z),
+            title = data.title,
+            type = 'GENERAL',
+            message = data.code,
+            job = data.job or 'police',
+        })
+    end
 end
 
 RegisterNetEvent('p_bridge/server/dispatch/sendAlert', function(data)
