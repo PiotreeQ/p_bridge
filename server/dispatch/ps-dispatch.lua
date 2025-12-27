@@ -32,15 +32,15 @@ Bridge.Dispatch.SendAlert = function(playerId, data)
         icon = data.icon or 'fa-solid fa-bell',
         priority = data.priority == 'high' and 1 or 2,
         coords = vector3(plyCoords.x, plyCoords.y, plyCoords.z),
-        alertTime = data.time,
         alert = {
             radius = 0,
             sprite = data.blip?.sprite or 1,
             scale = data.blip?.scale or 1.1,
             color = data.blip?.color or 1,
             flash = data.priority == 'high',
-            length = 5
+            length = data.time or 5
         },
+        length = data.time or 5,
         jobs = data.job
     })
 end
