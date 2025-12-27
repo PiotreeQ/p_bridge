@@ -39,6 +39,7 @@ Bridge.Dispatch.SendAlert = function(playerId, data)
             scale = data.blip?.scale or 1.1,
             color = data.blip?.color or 1,
             flash = data.priority == 'high',
+            length = 5
         },
         jobs = data.job
     })
