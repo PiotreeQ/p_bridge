@@ -304,7 +304,7 @@ Bridge.Framework.getMoney = function(playerId)
     return {
         money = xPlayer.PlayerData.money['cash'] or 0,
         bank = xPlayer.PlayerData.money['bank'] or 0,
-        black_money = xPlayer.PlayerData.money['crypto'] or 0
+        black_money = GetResourceState('ox_inventory') == 'started' and exports['ox_inventory']:Search(playerId, 'count', 'black_money') or xPlayer.PlayerData.money['crypto'] or 0
     }
 end
 
@@ -319,6 +319,11 @@ Bridge.Framework.removeMoney = function(playerId, account, amount)
             lib.print.error(('No player found with ID: %s\nInvoker: %s'):format(playerId, GetInvokingResource() or GetCurrentResourceName()))
         end
         return false
+    end
+
+    if account == 'black_money' and GetResourceState('ox_inventory') == 'started' then
+        exports['ox_inventory']:RemoveItem(playerId, 'black_money', amount)
+        return true
     end
 
     local accounts = {
@@ -341,6 +346,11 @@ Bridge.Framework.addMoney = function(playerId, account, amount)
             lib.print.error(('No player found with ID: %s\nInvoker: %s'):format(playerId, GetInvokingResource() or GetCurrentResourceName()))
         end
         return false
+    end
+
+    if account == 'black_money' and GetResourceState('ox_inventory') == 'started' then
+        exports['ox_inventory']:AddItem(playerId, 'black_money', amount)
+        return true
     end
 
     local accounts = {
