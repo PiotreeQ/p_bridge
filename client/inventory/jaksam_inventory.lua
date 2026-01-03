@@ -34,3 +34,7 @@ Bridge.Inventory.getItemData = function(itemName)
     local info = exports['jaksam_inventory']:getStaticItem(itemName)
     return info and {name = itemName, label = info.label, description = info.description, image = ('https://cfx-nui-jaksam_inventory/_images/%s.png'):format(itemName)}
 end
+
+Bridge.Inventory.getPlayerItems = function()
+    return exports['jaksam_inventory']:getInventory()?.items or {}
+end

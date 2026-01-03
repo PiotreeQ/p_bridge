@@ -24,3 +24,7 @@ Bridge.Inventory.getItemData = function(itemName)
     local info = exports["tgiann-inventory"]:Items(itemName)
     return info and {name = itemName, label = info.label, description = info.description, image = ('nui://inventory_images/images/%s.png'):format(itemName)}
 end
+
+Bridge.Inventory.getPlayerItems = function()
+    return exports["tgiann-inventory"]:GetPlayerItems()
+end

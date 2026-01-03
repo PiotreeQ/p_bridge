@@ -39,3 +39,7 @@ Bridge.Inventory.getItemData = function(itemName)
     local info = GlobalState['p_bridge:itemsData'][itemName]
     return info and {name = itemName, label = info.label, description = info.description, image = ('https://cfx-nui-ox_inventory/web/images/%s.png'):format(itemName)}
 end
+
+Bridge.Inventory.getPlayerItems = function()
+    return ESX.GetPlayerData().inventory
+end

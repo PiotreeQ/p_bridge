@@ -24,3 +24,7 @@ Bridge.Inventory.getItemData = function(itemName)
     local info = exports['origen_inventory']:Items(itemName)
     return info and {name = itemName, label = info.label, description = info.description, image = ('https://cfx-nui-origen_inventory/ui/images/%s.png'):format(itemName)}
 end
+
+Bridge.Inventory.getPlayerItems = function()
+    return exports['origen_inventory']:getPlayerInventory()
+end

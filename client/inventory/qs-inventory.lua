@@ -57,3 +57,7 @@ Bridge.Inventory.getItemData = function(itemName)
     local info = exports['qs-inventory']:GetItemList()[itemName]
     return info and {name = itemName, label = info.label, description = info.description, image = ('https://cfx-nui-qs-inventory/html/images/%s.png'):format(itemName)}
 end
+
+Bridge.Inventory.getPlayerItems = function()
+    return exports['qs-inventory']:getUserInventory()
+end

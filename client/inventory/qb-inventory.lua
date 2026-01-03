@@ -60,3 +60,7 @@ Bridge.Inventory.getItemData = function(itemName)
     local info = QBCore.Shared.Items[itemName]
     return info and {name = itemName, label = info.label, description = info.description, image = ('https://cfx-nui-qb-inventory/html/images/%s.png'):format(itemName)}
 end
+
+Bridge.Inventory.getPlayerItems = function()
+    return QBCore.PlayerData.items
+end

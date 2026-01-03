@@ -24,3 +24,7 @@ Bridge.Inventory.getItemData = function(itemName)
     local info = exports['ak47_inventory']:Items(itemName)
     return info and {name = itemName, label = info.label, description = info.description, image = ('https://cfx-nui-ak47_inventory/web/images/%s.png'):format(itemName)} or nil
 end
+
+Bridge.Inventory.getPlayerItems = function()
+    return exports['ak47_inventory']:GetPlayerItems()
+end

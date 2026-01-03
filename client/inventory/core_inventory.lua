@@ -30,3 +30,7 @@ Bridge.Inventory.getItemData = function(itemName)
     lib.print.error('core_inventory doesnt have export to get item data')
     return nil
 end
+
+Bridge.Inventory.getPlayerItems = function()
+    return exports.core_inventory:getInventory()
+end
