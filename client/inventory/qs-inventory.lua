@@ -49,8 +49,20 @@ Bridge.Inventory.openInventory = function(invType, data)
     end
 end
 
-Bridge.Inventory.getItemCount = function(itemName)
-    return exports['qs-inventory']:Search(itemName)
+ Bridge.Inventory.getItemCount = function(itemName)
+    local inventory = exports['qs-inventory']:getUserInventory()
+    if not inventory then return 0 end
+
+    local count = 0
+
+    for _, item in pairs(inventory) do
+        local name = item.name or (item.info and item.info.name)
+        if name == itemName then
+            count = count + (item.amount or 0)
+        end
+    end
+
+    return count
 end
 
 Bridge.Inventory.getItemData = function(itemName)
@@ -59,5 +71,6 @@ Bridge.Inventory.getItemData = function(itemName)
 end
 
 Bridge.Inventory.getPlayerItems = function()
-    return exports['qs-inventory']:getUserInventory()
+    local items = exports['qs-inventory']:getUserInventory()
+    return items
 end
