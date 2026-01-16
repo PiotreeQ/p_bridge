@@ -117,6 +117,7 @@ Config.CarKeys = 'auto'
     Renewed-Vehiclekeys - Renewed Vehiclekeys
     brutal_carkeys - Brutal Car Keys
     sna-vehiclekeys - Sna Vehicle Keys
+    mani-keys - Mani Car Keys
     none - no car keys system
 
     -- open ticket on our discord if you want to add your car keys system [discord.gg/piotreqscripts]
