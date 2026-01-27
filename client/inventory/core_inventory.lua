@@ -27,7 +27,11 @@ Bridge.Inventory.getItemCount = function(itemName)
 end
 
 Bridge.Inventory.getItemData = function(itemName)
-    lib.print.error('core_inventory doesnt have export to get item data')
+    local Items = lib.callback.await('p_bridge/core_inventory/getItemsData', false)
+    if Items[itemName] then
+        return Items[itemName]
+    end
+    
     return nil
 end
 

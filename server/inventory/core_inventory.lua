@@ -7,10 +7,28 @@ while not Bridge do
 end
 
 if Config.Debug then
-    lib.print.info('[Inventory] Loaded: codem-inventory')
+    lib.print.info('[Inventory] Loaded: core_inventory')
 end
 
 Bridge.Inventory = {}
+Bridge.Inventory.Items = {}
+
+Citizen.CreateThread(function()
+    while not MySQL?.ready do
+        Citizen.Wait(100)
+    end
+
+    local result = MySQL.query.await('SELECT * FROM items')
+    for k, v in ipairs(result) do
+        Bridge.Inventory.Items[v.name] = {
+            name = v.name,
+            label = v.label,
+            weight = v.weight,
+            description = v.description,
+            image = ('https://cfx-nui-core_inventory/html/img/%s.png'):format(v.name)
+        }
+    end
+end)
 
 --@param playerId: number [existing player id]
 --@return items: table [{name: string, amount: number, metadata: table, slot: number}]
@@ -59,3 +77,7 @@ Bridge.Inventory.getItemSlot = function(playerId, slot)
     local itemData = exports.core_inventory:getItemBySlot(playerId, slot)
     return itemData and {name = itemData.name, label = itemData.label, amount = itemData.amount, metadata = itemData.metadata or {}} or nil
 end
+
+lib.callback.register('p_bridge/core_inventory/getItemsData', function()
+    return Bridge.Inventory.Items
+end)
