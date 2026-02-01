@@ -46,7 +46,7 @@ Bridge.Inventory.createShop = function(shopName, data)
         Citizen.Wait(100)
     end
     exports['origen_inventory']:createShop(shopName, {
-        label = data.name,
+        label = data.name or 'Shop',
         slots = #data.inventory,
         items = data.inventory,
         locations = data.locations,
