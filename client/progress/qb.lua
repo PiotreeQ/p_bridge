@@ -18,9 +18,9 @@ Bridge.Progress.Start = function(data)
     local disableControls = {disableMovement = true, disableCarMovement = true, disableCombat = true}
     if data.disable then
         disableControls = {
-            disableMovement = data.disable?.move or true,
-            disableCarMovement = data.disable?.car or true,
-            disableCombat = data.disable?.combat or true
+            disableMovement = data.disable?.move ~= nil and data.disable?.move or true,
+            disableCarMovement = data.disable?.car ~= nil and data.disable?.car or true,
+            disableCombat = data.disable?.combat ~= nil and data.disable?.combat or true
         }
     end
     exports['progressbar']:Progress({
