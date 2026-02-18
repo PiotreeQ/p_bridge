@@ -15,7 +15,7 @@ Bridge.CarKeys = {}
 --@param vehiclePlate: string [the plate of the vehicle]
 --@param vehicleEntity: number [the entity ID of the vehicle]
 Bridge.CarKeys.CreateKeys = function(vehiclePlate, vehicleEntity)
-    TriggerServerEvent('qbx_vehiclekeys:server:hotwiredVehicle', Bridge.Utils.getNetIdFromEntity(vehicleEntity))
+    TriggerServerEvent('qbx_vehiclekeys:server:tookKeys', NetworkGetNetworkIdFromEntity(vehicleEntity))
 end
 
 --@param vehiclePlate: string [the plate of the vehicle]
