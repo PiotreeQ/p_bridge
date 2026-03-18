@@ -33,3 +33,9 @@ Bridge.Utils.getEntityFromNetId = function(netId)
 
     return entity
 end
+
+Bridge.Debug = function(...)
+    if Config.Debug then
+        print('[Debug]', ...)
+    end
+end
