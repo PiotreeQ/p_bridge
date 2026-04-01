@@ -91,6 +91,7 @@ Config.Appearance = 'auto'
     esx_skin - ESX Skin
     qb-clothing - QBCore Clothing
     qs-appearance - Quasar Appearance
+    st_clothing - ST Clothing
 
     -- open ticket on our discord if you want to add your appearance system [discord.gg/piotreqscripts]
 ]]

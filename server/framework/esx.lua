@@ -265,6 +265,8 @@ Bridge.Framework.getMoney = function(playerId)
     }
 end
 
+lib.callback.register('p_bridge/server/framework/getMoney', Bridge.Framework.getMoney)
+
 --@param playerId: number|string [existing player id or unique identifier]
 --@param account: string [account type, e.g., 'money', 'bank', 'black_money']
 --@param amount: number [amount to add]
