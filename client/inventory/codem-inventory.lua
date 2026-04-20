@@ -33,11 +33,41 @@ Bridge.Inventory.openInventory = function(invType, data)
 end
 
 Bridge.Inventory.getItemCount = function(itemName)
+    itemName = tostring(itemName or ''):lower()
+    if itemName == '' then return 0 end
+
+    if GetResourceState('codem-inventory') == 'started' then
+        local ok, result = pcall(function()
+            return exports['codem-inventory']:GetItemsTotalAmount(itemName)
+        end)
+
+        if ok and result ~= nil then
+            return tonumber(result) or 0
+        end
+
+        -- fallback (au cas où)
+        local ok2, result2 = pcall(function()
+            return exports['codem-inventory']:HasItem(itemName, 1)
+        end)
+
+        if ok2 then
+            if type(result2) == 'number' then
+                return tonumber(result2) or 0
+            end
+            if result2 == true then
+                return 1
+            end
+        end
+
+        return 0
+    end
+
     if GetResourceState('es_extended') == 'started' then
         local ESX = exports['es_extended']:getSharedObject()
         local items = ESX.GetPlayerData().inventory
+
         if items then
-            for k, v in pairs(items) do
+            for _, v in pairs(items) do
                 if v.name == itemName then
                     return v.count or 0
                 end
@@ -45,26 +75,9 @@ Bridge.Inventory.getItemCount = function(itemName)
         end
 
         return 0
-    elseif GetResourceState('qb-core') == 'started' then
-        local QBCore = exports['qb-core']:GetCoreObject()
-        local items = QBCore.Functions.GetPlayerData().items
-        for _, item in pairs(items) do
-            if item.name == itemName then
-                return item.amount
-            end
-        end
-
-        return 0
-    elseif GetResourceState('qbx_core') == 'started' then
-        local items = exports['qbx_core']:GetPlayerData().items
-        for _, item in pairs(items) do
-            if item.name == itemName then
-                return item.amount
-            end
-        end
-
-        return 0
     end
+
+    return 0
 end
 
 Bridge.Inventory.getItemData = function(itemName)
@@ -73,5 +86,27 @@ Bridge.Inventory.getItemData = function(itemName)
 end
 
 Bridge.Inventory.getPlayerItems = function()
-    return exports['codem-inventory']:GetClientPlayerInventory()
+    local ok, inv = pcall(function()
+        return exports['codem-inventory']:GetClientPlayerInventory()
+    end)
+
+    if not ok or not inv then return {} end
+
+    local items = inv.items or inv.inventory or inv.slots or inv
+    local formatted = {}
+
+    for _, item in pairs(items) do
+        if item and item.name and (item.amount or item.count or 0) > 0 then
+            formatted[#formatted + 1] = {
+                name = item.name,
+                label = item.label or item.name,
+                amount = item.amount or item.count or 0,
+                count = item.amount or item.count or 0,
+                metadata = item.info or item.metadata or {},
+                slot = item.slot
+            }
+        end
+    end
+
+    return formatted
 end
