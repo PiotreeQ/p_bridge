@@ -42,7 +42,7 @@ Bridge.Inventory.getItemCount = function(itemName)
 end
 
 Bridge.Inventory.getItemData = function(itemName)
-    local info = QBCore.Shared.Items[itemName]
+    local info = exports["jpr-inventory"]:GetItemList()[itemName]
     return info and {name = itemName, label = info.label, description = info.description, image = ('https://cfx-nui-jpr-inventory/html/images/%s.png'):format(itemName)}
 end
 
