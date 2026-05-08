@@ -38,15 +38,25 @@ end)
 
 lib.callback.register('p_bridge/server/getPlayerSkin', function(source)
     local _source = source
+    local identifier = Bridge.Framework.getUniqueId(_source)
     if GetResourceState('tgiann-clothing') == 'started' then
-        local xPlayer = Bridge.Framework.getPlayerById(_source)
-        local result = MySQL.query.await('SELECT * FROM tgiann_skin WHERE citizenid = ?', { xPlayer.identifier })
+        local result = MySQL.query.await('SELECT * FROM tgiann_skin WHERE citizenid = ?', { identifier })
         if result and result[1] then
             return json.decode(result[1].skin)
         end
     elseif GetResourceState('rcore_clothing') == 'started' then
         local identifier = Bridge.Framework.getUniqueId(_source)
         return exports["rcore_clothing"]:getSkinByIdentifier(identifier)
+    elseif GetResourceState('es_extended') == 'started' then
+        local row = MySQL.single.await('SELECT skin FROM users WHERE identifier = ?', {
+            identifier
+        })
+        return row and json.decode(row.skin) or nil
+    elseif GetResourceState('qb-core') == 'started' or GetResourceState('qbx_core') == 'started' then
+        local row = MySQL.single.await('SELECT * FROM playerskins WHERE citizenid = ? AND active = 1', {
+            identifier
+        })
+        return row and json.decode(row.skin) or nil
     end
 
     return nil 

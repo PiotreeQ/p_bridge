@@ -17,7 +17,7 @@ Bridge.Appearance.fetchCurrentSkin = function()
 end
 
 Bridge.Appearance.fetchDatabaseSkin = function()
-    local databaseSkin = lib.callback.await('illenium-appearance:server:getAppearance', false)
+    local databaseSkin = lib.callback.await('p_bridge/server/getPlayerSkin', false)
 
     if Config.Debug then
         lib.print.info('[Appearance] Fetched database skin:', databaseSkin)
