@@ -92,6 +92,12 @@ Bridge.Appearance.setPlayerSkin = function(skinData)
         skinData = json.decode(skinData)
     end
 
+    local isESX = skinData.torso_1 ~= nil or skinData.mask_1 ~= nil or skinData.sex ~= nil
+    local isQB  = type(skinData.torso) == 'table' or type(skinData.pants) == 'table'
+    if not skinData.components and (isESX or isQB) then
+        skinData = Bridge.Appearance.convertSkinFormat(skinData)
+    end
+
     exports['illenium-appearance']:setPlayerAppearance(skinData)
 
     if Config.Debug then
@@ -107,6 +113,12 @@ Bridge.Appearance.setPlayerClothing = function(clothingData)
 
     if type(clothingData) == 'string' then
         clothingData = json.decode(clothingData)
+    end
+
+    local isESX = clothingData.torso_1 ~= nil or clothingData.mask_1 ~= nil or clothingData.sex ~= nil
+    local isQB  = type(clothingData.torso) == 'table' or type(clothingData.pants) == 'table'
+    if not clothingData.components and (isESX or isQB) then
+        clothingData = Bridge.Appearance.convertSkinFormat(clothingData)
     end
 
     exports['illenium-appearance']:setPedComponents(cache.ped, clothingData.components)
