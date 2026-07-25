@@ -28,3 +28,24 @@ end
 Bridge.Inventory.getPlayerItems = function()
     return exports['origen_inventory']:getPlayerInventory()
 end
+
+---@return weapon: table|nil [currently equipped weapon { name, label, metadata, slot } or nil]
+Bridge.Inventory.getCurrentWeapon = function()
+    local weaponHash = GetSelectedPedWeapon(cache.ped)
+    if not weaponHash or weaponHash == `WEAPON_UNARMED` then
+        return nil
+    end
+
+    for _, item in pairs(Bridge.Inventory.getPlayerItems() or {}) do
+        if item.name and GetHashKey(item.name) == weaponHash then
+            return {name = item.name, label = item.label, metadata = item.metadata or item.info or {}, slot = item.slot}
+        end
+    end
+
+    return nil
+end
+
+---@param state: boolean [true to force-holster/disarm the equipped weapon]
+Bridge.Inventory.disarm = function(state)
+    SetCurrentPedWeapon(cache.ped, `WEAPON_UNARMED`, true)
+end

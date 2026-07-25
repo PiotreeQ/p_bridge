@@ -1,4 +1,4 @@
-if (Config.Inventory == 'auto' and not checkResource('S-Inventory')) or (Config.Inventory ~= 'auto' and Config.Inventory ~= 'S-Inventory') then
+if (Config.Inventory == 'auto' and not (checkResource('S-Inventory') or checkResource('S-inventory'))) or (Config.Inventory ~= 'auto' and Config.Inventory ~= 'S-Inventory' and Config.Inventory ~= 'S-inventory') then
     return
 end
 
@@ -42,4 +42,26 @@ end
 
 Bridge.Inventory.getPlayerItems = function()
     return ESX.GetPlayerData().inventory
+end
+
+---@return weapon: table|nil [currently equipped weapon { name, label, metadata } or nil]
+Bridge.Inventory.getCurrentWeapon = function()
+    local weaponHash = GetSelectedPedWeapon(cache.ped)
+    if not weaponHash or weaponHash == `WEAPON_UNARMED` then
+        return nil
+    end
+
+    local loadout = ESX.GetPlayerData().loadout or {}
+    for _, weapon in pairs(loadout) do
+        if GetHashKey(weapon.name) == weaponHash then
+            return {name = weapon.name, label = weapon.label, metadata = {ammo = weapon.ammo, components = weapon.components}}
+        end
+    end
+
+    return nil
+end
+
+---@param state: boolean [true to force-holster/disarm the equipped weapon]
+Bridge.Inventory.disarm = function(state)
+    SetCurrentPedWeapon(cache.ped, `WEAPON_UNARMED`, true)
 end

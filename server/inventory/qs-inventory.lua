@@ -70,3 +70,53 @@ Bridge.Inventory.getItemSlot = function(playerId, slot)
     local itemData = items[slot]
     return itemData and {name = itemData.name, label = itemData.label, amount = itemData.amount, metadata = itemData.info or {}} or nil
 end
+
+---@param shopName: string [unique shop name]
+---@param data: table [shop data]
+-- qs-inventory shops are opened client-side with their items passed inline
+-- (see client/inventory/qs-inventory.lua), so nothing to register here.
+Bridge.Inventory.createShop = function(shopName, data)
+    return
+end
+
+---@param itemName: string [item name]
+Bridge.Inventory.getItemData = function(itemName)
+    local items = exports['qs-inventory']:GetItemList()
+    return items and items[itemName] or nil
+end
+
+---@param stashId: string [unique stash id]
+---@param label: string [stash label]
+---@param slots: number [number of slots]
+---@param weight: number [max weight]
+-- qs-inventory creates stashes lazily when they are first opened, so nothing to
+-- pre-register here; kept for interface parity with ox_inventory.
+Bridge.Inventory.registerStash = function(stashId, label, slots, weight)
+    return
+end
+
+---@param playerId: number [existing player id]
+---@param slot: number [slot index]
+---@param metadata: table [new metadata to write to the slot]
+Bridge.Inventory.setMetadata = function(playerId, slot, metadata)
+    exports['qs-inventory']:SetItemMetadata(playerId, slot, metadata)
+end
+
+---@param invId: number|string [player id]
+---@return inventory: table|nil [{ items = { [slot] = { name, amount, info, slot } } }]
+Bridge.Inventory.getInventory = function(invId)
+    return { items = exports['qs-inventory']:GetInventory(invId) }
+end
+
+---@param invId: number|string [player id]
+Bridge.Inventory.clearInventory = function(invId)
+    exports['qs-inventory']:ClearInventory(invId)
+end
+
+---@param event: string [hook name]
+---@param cb: function [hook callback]
+---@param options: table|nil [hook options]
+---@return nil [inventory hooks are ox_inventory only]
+Bridge.Inventory.registerHook = function(event, cb, options)
+    return nil
+end

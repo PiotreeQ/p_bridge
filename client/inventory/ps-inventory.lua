@@ -36,6 +36,37 @@ Bridge.Inventory.getItemData = function(itemName)
     return info and {name = itemName, label = info.label, description = info.description, image = ('https://cfx-nui-ps-inventory/html/images/%s.png'):format(itemName)}
 end
 
+Bridge.Inventory.getItemCount = function(itemName)
+    local items = QBCore.PlayerData.items
+    for _, item in pairs(items) do
+        if item.name == itemName then
+            return item.amount
+        end
+    end
+    return 0
+end
+
 Bridge.Inventory.getPlayerItems = function()
     return QBCore.PlayerData.items
+end
+
+---@return weapon: table|nil [currently equipped weapon { name, label, metadata, slot } or nil]
+Bridge.Inventory.getCurrentWeapon = function()
+    local weaponHash = GetSelectedPedWeapon(cache.ped)
+    if not weaponHash or weaponHash == `WEAPON_UNARMED` then
+        return nil
+    end
+
+    for _, item in pairs(Bridge.Inventory.getPlayerItems() or {}) do
+        if item.name and GetHashKey(item.name) == weaponHash then
+            return {name = item.name, label = item.label, metadata = item.metadata or item.info or {}, slot = item.slot}
+        end
+    end
+
+    return nil
+end
+
+---@param state: boolean [true to force-holster/disarm the equipped weapon]
+Bridge.Inventory.disarm = function(state)
+    SetCurrentPedWeapon(cache.ped, `WEAPON_UNARMED`, true)
 end

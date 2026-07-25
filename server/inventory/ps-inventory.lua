@@ -103,3 +103,55 @@ Bridge.Inventory.createShop = function(shopName, data)
         items = data.inventory
     })
 end
+
+---@param itemName: string [item name]
+Bridge.Inventory.getItemData = function(itemName)
+    return QBCore and QBCore.Shared.Items[itemName] or nil
+end
+
+---@param invId: number|string [player id or stash id]
+---@return inventory: table|nil [{ items = { [slot] = { name, amount, info, slot } } }]
+Bridge.Inventory.getInventory = function(invId)
+    return exports['ps-inventory']:GetInventory(invId)
+end
+
+---@param invId: number|string [player id]
+Bridge.Inventory.clearInventory = function(invId)
+    local playerId = tonumber(invId)
+    if not playerId then
+        lib.print.error('clearInventory only supports player ids in ps-inventory')
+        return
+    end
+
+    for _, item in pairs(Bridge.Inventory.getPlayerItems(playerId) or {}) do
+        local amount = item.amount or item.count
+        if item.name and amount and amount > 0 then
+            Bridge.Inventory.removeItem(playerId, item.name, amount, nil, item.slot)
+        end
+    end
+end
+
+---@param stashId: string [unique stash id]
+---@param label: string [stash label]
+---@param slots: number [number of slots]
+---@param weight: number [max weight]
+-- ps-inventory creates stashes lazily when they are first opened, so nothing to
+-- pre-register here; kept for interface parity with ox_inventory.
+Bridge.Inventory.registerStash = function(stashId, label, slots, weight)
+    return
+end
+
+---@param playerId: number|string [player id or stash id]
+---@param slot: number [slot index]
+---@param metadata: table [new metadata to write to the slot]
+Bridge.Inventory.setMetadata = function(playerId, slot, metadata)
+    lib.print.error('setMetadata is not supported in ps-inventory, please change type in config')
+end
+
+---@param event: string [hook name]
+---@param cb: function [hook callback]
+---@param options: table|nil [hook options]
+---@return nil [inventory hooks are ox_inventory only]
+Bridge.Inventory.registerHook = function(event, cb, options)
+    return nil
+end

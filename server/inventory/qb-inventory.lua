@@ -138,3 +138,8 @@ end
 Bridge.Inventory.registerHook = function(event, cb, options)
     return nil
 end
+
+---@param itemName: string [item name]
+Bridge.Inventory.getItemData = function(itemName)
+    return QBCore and QBCore.Shared.Items[itemName] or nil
+end

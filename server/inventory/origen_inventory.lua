@@ -52,3 +52,55 @@ Bridge.Inventory.createShop = function(shopName, data)
         locations = data.locations,
     })
 end
+
+---@param itemName: string [item name]
+Bridge.Inventory.getItemData = function(itemName)
+    return exports['origen_inventory']:Items(itemName)
+end
+
+---@param stashId: string [unique stash id]
+---@param label: string [stash label]
+---@param slots: number [number of slots]
+---@param weight: number [max weight]
+-- origen_inventory creates stashes lazily when they are first opened, so nothing
+-- to pre-register here; kept for interface parity with ox_inventory.
+Bridge.Inventory.registerStash = function(stashId, label, slots, weight)
+    return
+end
+
+---@param playerId: number|string [player id or stash id]
+---@param slot: number [slot index]
+---@param metadata: table [new metadata to write to the slot]
+Bridge.Inventory.setMetadata = function(playerId, slot, metadata)
+    lib.print.error('setMetadata is not supported in origen_inventory, please change type in config')
+end
+
+---@param invId: number|string [player id]
+---@return inventory: table|nil [{ items = { name, amount, metadata, slot } }]
+Bridge.Inventory.getInventory = function(invId)
+    return { items = Bridge.Inventory.getPlayerItems(invId) }
+end
+
+---@param invId: number|string [player id]
+Bridge.Inventory.clearInventory = function(invId)
+    local playerId = tonumber(invId)
+    if not playerId then
+        lib.print.error('clearInventory only supports player ids in origen_inventory')
+        return
+    end
+
+    for _, item in pairs(Bridge.Inventory.getPlayerItems(playerId) or {}) do
+        local amount = item.amount or item.count
+        if item.name and amount and amount > 0 then
+            Bridge.Inventory.removeItem(playerId, item.name, amount, nil, item.slot)
+        end
+    end
+end
+
+---@param event: string [hook name]
+---@param cb: function [hook callback]
+---@param options: table|nil [hook options]
+---@return nil [inventory hooks are ox_inventory only]
+Bridge.Inventory.registerHook = function(event, cb, options)
+    return nil
+end

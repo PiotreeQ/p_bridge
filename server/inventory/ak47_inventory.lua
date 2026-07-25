@@ -91,3 +91,40 @@ Bridge.Inventory.registerStash = function(stashId, label, slots, weight)
         type = 'stash'
     })
 end
+
+---@param playerId: number|string [player id or stash id]
+---@param slot: number [slot index]
+---@param metadata: table [new metadata to write to the slot]
+Bridge.Inventory.setMetadata = function(playerId, slot, metadata)
+    lib.print.error('setMetadata is not supported in ak47_inventory, please change type in config')
+end
+
+---@param invId: number|string [player id]
+---@return inventory: table|nil [{ items = { name, amount, metadata, slot } }]
+Bridge.Inventory.getInventory = function(invId)
+    return { items = Bridge.Inventory.getPlayerItems(invId) }
+end
+
+---@param invId: number|string [player id]
+Bridge.Inventory.clearInventory = function(invId)
+    local playerId = tonumber(invId)
+    if not playerId then
+        lib.print.error('clearInventory only supports player ids in ak47_inventory')
+        return
+    end
+
+    for _, item in pairs(Bridge.Inventory.getPlayerItems(playerId) or {}) do
+        local amount = item.amount or item.count
+        if item.name and amount and amount > 0 then
+            Bridge.Inventory.removeItem(playerId, item.name, amount, nil, item.slot)
+        end
+    end
+end
+
+---@param event: string [hook name]
+---@param cb: function [hook callback]
+---@param options: table|nil [hook options]
+---@return nil [inventory hooks are ox_inventory only]
+Bridge.Inventory.registerHook = function(event, cb, options)
+    return nil
+end
