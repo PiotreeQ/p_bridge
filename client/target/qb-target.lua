@@ -244,10 +244,14 @@ Bridge.Target.addSphereZone = function(parameters)
     end
     local invoker = GetInvokingResource() or GetCurrentResourceName()
     local targetName = ('%s_%s_%s'):format(invoker, 'sphere', tostring(math.random(11111111, 99999999)))
-    exports['qb-target']:AddCircleZone(targetName, parameters.coords, parameters.radius or 1.0, {
+    local radius = parameters.radius or 1.0
+    exports['qb-target']:AddBoxZone(targetName, parameters.coords, radius * 2, radius * 2, {
         name = targetName,
+        heading = 0,
         debugPoly = Config.Debug,
         drawSprite = parameters.drawSprite or false,
+        minZ = parameters.coords.z - radius,
+        maxZ = parameters.coords.z + radius + 1.0,
     }, {
         options = parameters.options,
         distance = parameters.options[1]?.distance or 2.0
