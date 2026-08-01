@@ -12,7 +12,13 @@ end
 
 QBCore = exports['qb-core']:GetCoreObject()
 
-RegisterNetEvent('QBCore:Server:PlayerLoaded', function(playerId)
+RegisterNetEvent('QBCore:Server:PlayerLoaded', function(player)
+    local playerId = player
+    if type(playerId) == 'table' then
+        playerId = (playerId.PlayerData and playerId.PlayerData.source) or playerId.source
+    end
+    playerId = tonumber(playerId) or tonumber(source)
+    if not playerId or playerId <= 0 then return end
     TriggerEvent('p_bridge/server/playerLoaded', playerId) -- DONT TOUCH IT!
 end)
 

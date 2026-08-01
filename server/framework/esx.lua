@@ -13,6 +13,11 @@ end
 ESX = exports['es_extended']:getSharedObject()
 
 RegisterNetEvent('esx:playerLoaded', function(playerId)
+    if type(playerId) == 'table' then
+        playerId = playerId.source or (playerId.PlayerData and playerId.PlayerData.source)
+    end
+    playerId = tonumber(playerId) or tonumber(source)
+    if not playerId or playerId <= 0 then return end
     TriggerEvent('p_bridge/server/playerLoaded', playerId) -- DONT TOUCH IT!
 end)
 
