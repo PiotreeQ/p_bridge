@@ -134,7 +134,7 @@ Config.Dispatch = 'auto'
     auto - will try to detect dispatch system automatically
     ps-dispatch - Project Sloth Dispatch
     piotreq_gpt - pScripts Police MDT Dispatch
-    cd_dispatch - CodeM Dispatch
+    cd_dispatch - CodeSign Dispatch
     qs-dispatch - QS Dispatch
     tk_dispatch - TK Dispatch
     rcore_dispatch - RCore Dispatch
