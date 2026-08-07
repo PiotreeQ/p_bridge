@@ -88,6 +88,7 @@ Config.Appearance = 'p_appearance'
     auto - will try to detect appearance system automatically
     p_appearance - pScripts Appearance
     illenium-appearance - Illenium Appearance
+    qf-skinmenu - QF Skinmenu (illenium-appearance replacement)
     rcore_clothing - RCore Clothing
     bl_appearance - Bl Appearance
     crm-appearance - CRM Appearance
@@ -96,6 +97,7 @@ Config.Appearance = 'p_appearance'
     qb-clothing - QBCore Clothing
     qs-appearance - Quasar Appearance
     st_clothing - ST Clothing
+    um-clothing - UM Clothing
 
     -- open ticket on our discord if you want to add your appearance system [discord.gg/piotreqscripts]
 ]]
@@ -140,6 +142,8 @@ Config.Dispatch = 'auto'
     rcore_dispatch - RCore Dispatch
     lb-tablet - LB-Tablet Dispatch
     kartik-mdt - Kartik MDT Dispatch
+    glxs-dispatch - Galaxis Studios Dispatch
+    oxide-dispatch - Oxide Studios Dispatch
 
     -- open ticket on our discord if you want to add your dispatch system [discord.gg/piotreqscripts]
 ]]

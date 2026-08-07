@@ -22,3 +22,9 @@ Bridge.Dispatch.SendAlert = function(data)
     data.street = GetStreetNameFromHashKey(GetStreetNameAtCoord(data.coords.x, data.coords.y, data.coords.z))
     TriggerServerEvent('p_bridge/server/dispatch/sendAlert', data)
 end
+
+-- Galaxis Dispatch relay - the glxs-dispatch server adapter routes alerts through
+-- the alerting player so glxs can resolve name/gender/street from the event source.
+RegisterNetEvent('p_bridge/client/dispatch/glxsRelay', function(alertType, coords, context)
+    TriggerServerEvent('glxs-dispatch:server:SendAlert', alertType, coords, context)
+end)

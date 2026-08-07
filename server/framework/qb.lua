@@ -334,6 +334,19 @@ Bridge.Framework.getPlayerDob = function(playerId)
 end
 
 --@param playerId: number|string [existing player id or unique identifier]
+--@return gender: 'male'|'female'|nil [the player's gender from character data]
+Bridge.Framework.getPlayerGender = function(playerId)
+    local xPlayer = type(playerId) == 'number' and QBCore.Functions.GetPlayer(playerId) or QBCore.Functions.GetPlayerByCitizenId(playerId)
+    if not xPlayer then return nil end
+
+    local gender = xPlayer.PlayerData.charinfo and xPlayer.PlayerData.charinfo.gender
+    if gender == nil then return nil end
+
+    gender = tostring(gender):lower()
+    return (gender == '1' or gender == 'f' or gender == 'female') and 'female' or 'male'
+end
+
+--@param playerId: number|string [existing player id or unique identifier]
 --@return { money: number, bank: number, black_money: number }
 -- If playerId is a number, it fetches by ID; if it's a string, it fetches by identifier
 Bridge.Framework.getMoney = function(playerId)

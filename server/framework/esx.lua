@@ -290,6 +290,22 @@ Bridge.Framework.getPlayerDob = function(playerId)
 end
 
 --@param playerId: number|string [existing player id or unique identifier]
+--@return gender: 'male'|'female'|nil [the player's gender from character data]
+Bridge.Framework.getPlayerGender = function(playerId)
+    local xPlayer = type(playerId) == 'number' and ESX.GetPlayerFromId(playerId) or ESX.GetPlayerFromIdentifier(playerId)
+    if not xPlayer then return nil end
+
+    local sex = xPlayer.get('sex')
+    if sex == nil then
+        sex = MySQL.scalar.await('SELECT sex FROM users WHERE identifier = ?', { xPlayer.identifier })
+    end
+    if sex == nil then return nil end
+
+    sex = tostring(sex):lower()
+    return (sex == 'f' or sex == 'female' or sex == '1') and 'female' or 'male'
+end
+
+--@param playerId: number|string [existing player id or unique identifier]
 --@return { money: number, bank: number, black_money: number }
 -- If playerId is a number, it fetches by ID; if it's a string, it fetches by identifier
 Bridge.Framework.getMoney = function(playerId)

@@ -47,7 +47,7 @@ end
 --@param itemMetadata: table [item metadata, optional]
 --@return count: number [amount of items in inventory]
 Bridge.Inventory.getItemCount = function(playerId, itemName, itemMetadata)
-    return exports['ak47_inventory']:getItemCount(playerId, 'count', itemName, itemMetadata)
+    return exports['ak47_inventory']:GetAmount(playerId, itemName)
 end
 
 --@param playerId: number [existing player id]
