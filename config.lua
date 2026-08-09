@@ -98,6 +98,7 @@ Config.Appearance = 'p_appearance'
     qs-appearance - Quasar Appearance
     st_clothing - ST Clothing
     um-clothing - UM Clothing
+    op-clothing - OP Clothing [OTHERPLANET]
 
     -- open ticket on our discord if you want to add your appearance system [discord.gg/piotreqscripts]
 ]]
