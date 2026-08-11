@@ -86,10 +86,11 @@ end
 ---@param label: string [stash label]
 ---@param slots: number [number of slots]
 ---@param weight: number [max weight]
--- tgiann-inventory creates stashes lazily when they are first opened, so nothing
--- to pre-register here; kept for interface parity with ox_inventory.
 Bridge.Inventory.registerStash = function(stashId, label, slots, weight)
-    return
+    while GetResourceState('tgiann-inventory') ~= 'started' do
+        Citizen.Wait(100)
+    end
+    exports['tgiann-inventory']:RegisterStash(stashId, label, slots, weight)
 end
 
 ---@param playerId: number|string [player id or stash id]
@@ -168,11 +169,15 @@ end
 
 RegisterNetEvent('p_bridge/inventory/openInventory', function(invType, data)
     if invType == 'stash' then
-        if data.owner then
-            exports['tgiann-inventory']:OpenInventory(source, "stash", data.id..'_'..data.owner)
-        else
-            exports['tgiann-inventory']:OpenInventory(source, "stash", data)
+        -- OpenInventory's third argument must be the stash id STRING; passing
+        -- the data table sends an object into the inventory NUI and crashes it
+        -- (React error #31: "object with keys {id}").
+        local stashId = data.owner and ('%s_%s'):format(data.id, data.owner) or data.id
+        local invData = nil
+        if data.slots or data.maxWeight or data.label then
+            invData = { slots = data.slots, maxWeight = data.maxWeight, label = data.label }
         end
+        exports['tgiann-inventory']:OpenInventory(source, "stash", stashId, invData)
     elseif invType == 'player' then
         exports["tgiann-inventory"]:OpenInventoryById(source, data)
     elseif invType == 'shop' then
