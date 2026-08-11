@@ -34,6 +34,16 @@ Bridge.Inventory.addItem = function(playerId, itemName, itemCount, itemMetadata,
     exports['ox_inventory']:AddItem(playerId, itemName, itemCount, itemMetadata, itemSlot)
 end
 
+--@param stashId: string [stash id]
+--@param itemName: string [item name]
+--@param itemCount: number [amount of items to add]
+--@param itemMetadata: table [item metadata, optional]
+--@return success: boolean [whether the item landed in the stash]
+Bridge.Inventory.addItemToStash = function(stashId, itemName, itemCount, itemMetadata)
+    local success = exports['ox_inventory']:AddItem(stashId, itemName, itemCount, itemMetadata)
+    return success and true or false
+end
+
 --@param playerId: number [existing player id]
 --@param itemName: string [item name]
 --@param itemCount: number [amount of items to add]

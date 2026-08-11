@@ -262,6 +262,33 @@ Bridge.Framework.getPlayerJob = function(playerId)
     }
 end
 
+local identityCache = {}
+local function getUsersRow(identifier)
+    local cached = identityCache[identifier]
+    if not cached then
+        local row = MySQL.single.await('SELECT firstname, lastname, dateofbirth, sex FROM users WHERE identifier = ?', { identifier })
+        cached = row or {}
+        identityCache[identifier] = cached
+    end
+    return cached
+end
+
+local function resolveIdentity(xPlayer)
+    local firstName = xPlayer.get and (xPlayer.get('firstName') or xPlayer.get('firstname'))
+    local lastName  = xPlayer.get and (xPlayer.get('lastName') or xPlayer.get('lastname'))
+
+    local vars = xPlayer.variables
+    if vars then
+        firstName = firstName or vars.firstName or vars.firstname
+        lastName  = lastName or vars.lastName or vars.lastname
+    end
+
+    if firstName and lastName then return firstName, lastName end
+
+    local row = getUsersRow(xPlayer.identifier)
+    return firstName or row.firstname, lastName or row.lastname
+end
+
 --@param playerId: number|string [existing player id or unique identifier]
 --@param separate: boolean [if true, returns firstname and lastname separately]
 --@return name: string [example 'John Doe'] or firstname, lastname: string
@@ -274,11 +301,20 @@ Bridge.Framework.getPlayerName = function(playerId, separate)
         return nil
     end
 
+    local firstName, lastName = resolveIdentity(xPlayer)
+    if not firstName and not lastName then
+        -- Last resort: account name, so callers never receive/format nils
+        firstName = (xPlayer.getName and xPlayer.getName()) or GetPlayerName(xPlayer.source) or 'Unknown'
+        lastName = ''
+    end
+    firstName = firstName or ''
+    lastName = lastName or ''
+
     if separate then
-        return xPlayer.get('firstName'), xPlayer.get('lastName')
+        return firstName, lastName
     end
 
-    return ('%s %s'):format(xPlayer.get('firstName'), xPlayer.get('lastName'))
+    return (('%s %s'):format(firstName, lastName):gsub('%s+$', ''))
 end
 
 --@param playerId: number|string [existing player id or unique identifier]
@@ -286,7 +322,15 @@ end
 Bridge.Framework.getPlayerDob = function(playerId)
     local xPlayer = type(playerId) == 'number' and ESX.GetPlayerFromId(playerId) or ESX.GetPlayerFromIdentifier(playerId)
     if not xPlayer then return nil end
-    return xPlayer.get('dateofbirth')
+
+    local dob = xPlayer.get and xPlayer.get('dateofbirth')
+    if dob == nil and xPlayer.variables then
+        dob = xPlayer.variables.dateofbirth
+    end
+    if dob == nil then
+        dob = getUsersRow(xPlayer.identifier).dateofbirth
+    end
+    return dob
 end
 
 --@param playerId: number|string [existing player id or unique identifier]
@@ -295,9 +339,12 @@ Bridge.Framework.getPlayerGender = function(playerId)
     local xPlayer = type(playerId) == 'number' and ESX.GetPlayerFromId(playerId) or ESX.GetPlayerFromIdentifier(playerId)
     if not xPlayer then return nil end
 
-    local sex = xPlayer.get('sex')
+    local sex = xPlayer.get and xPlayer.get('sex')
+    if sex == nil and xPlayer.variables then
+        sex = xPlayer.variables.sex
+    end
     if sex == nil then
-        sex = MySQL.scalar.await('SELECT sex FROM users WHERE identifier = ?', { xPlayer.identifier })
+        sex = getUsersRow(xPlayer.identifier).sex
     end
     if sex == nil then return nil end
 

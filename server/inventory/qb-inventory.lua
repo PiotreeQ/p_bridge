@@ -44,6 +44,36 @@ Bridge.Inventory.addItem = function(playerId, itemName, itemCount, itemMetadata,
     exports['qb-inventory']:AddItem(playerId, itemName, itemCount, itemSlot, itemMetadata)
 end
 
+--@param stashId: string [stash id]
+--@param itemName: string [item name]
+--@param itemCount: number [amount of items to add]
+--@param itemMetadata: table [item metadata, optional]
+--@param stashSlots: number [stash slot count, used if the stash must be created]
+--@param stashMaxWeight: number [stash max weight, used if the stash must be created]
+--@return success: boolean [whether the item landed in the stash]
+-- qb-inventory's AddItem only reaches stashes that already exist in memory, so
+-- try the plain add first and only CreateInventory when the stash is unknown
+-- (creating unconditionally could shadow a stash persisted in the DB).
+Bridge.Inventory.addItemToStash = function(stashId, itemName, itemCount, itemMetadata, stashSlots, stashMaxWeight)
+    local function tryAdd()
+        local ok, success = pcall(function()
+            return exports['qb-inventory']:AddItem(stashId, itemName, itemCount, false, itemMetadata or false, 'p_bridge:addItemToStash')
+        end)
+        return ok and success and true or false
+    end
+
+    if tryAdd() then return true end
+
+    pcall(function()
+        exports['qb-inventory']:CreateInventory(stashId, {
+            label = stashId,
+            slots = stashSlots or 50,
+            maxweight = stashMaxWeight or 500000,
+        })
+    end)
+    return tryAdd()
+end
+
 --@param playerId: number [existing player id]
 --@param itemName: string [item name]
 --@param itemCount: number [amount of items to remove]

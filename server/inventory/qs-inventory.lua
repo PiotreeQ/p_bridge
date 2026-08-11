@@ -34,6 +34,21 @@ Bridge.Inventory.addItem = function(playerId, itemName, itemCount, itemMetadata,
     exports['qs-inventory']:AddItem(playerId, itemName, itemCount, itemSlot, itemMetadata)
 end
 
+--@param stashId: string [stash id]
+--@param itemName: string [item name]
+--@param itemCount: number [amount of items to add]
+--@param itemMetadata: table [item metadata, optional]
+--@param stashSlots: number [stash slot count, optional]
+--@param stashMaxWeight: number [stash max weight, optional]
+--@return success: boolean [whether the item landed in the stash]
+-- qs-inventory's AddItem is player-only; stashes have a dedicated export.
+Bridge.Inventory.addItemToStash = function(stashId, itemName, itemCount, itemMetadata, stashSlots, stashMaxWeight)
+    local ok = pcall(function()
+        exports['qs-inventory']:AddItemIntoStash(stashId, itemName, itemCount, nil, itemMetadata or {}, stashSlots, stashMaxWeight)
+    end)
+    return ok
+end
+
 --@param playerId: number [existing player id]
 --@param itemName: string [item name]
 --@param itemCount: number [amount of items to remove]
