@@ -145,6 +145,7 @@ Config.Dispatch = 'auto'
     kartik-mdt - Kartik MDT Dispatch
     glxs-dispatch - Galaxis Studios Dispatch
     oxide-dispatch - Oxide Studios Dispatch
+    apex_mdt - Apex Scripts MDT Dispatch
 
     -- open ticket on our discord if you want to add your dispatch system [discord.gg/piotreqscripts]
 ]]

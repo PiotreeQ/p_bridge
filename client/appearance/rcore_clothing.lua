@@ -128,10 +128,40 @@ local function mergeClothingIntoSkin(baseSkin, clothingData)
     return mergedSkin
 end
 
-Bridge.Appearance.fetchCurrentSkin = function()
-    local currentSkin = exports['rcore_clothing']:getPlayerSkin(false)
+-- rcore_clothing builds differ in which exports exist (older ones lack
+-- getPlayerSkin/setPlayerSkin), so every export call is guarded with fallbacks.
+local function getCurrentRcoreSkin()
+    local ok, skin = pcall(function()
+        return exports['rcore_clothing']:getPlayerSkin(false)
+    end)
+    if ok and skin then return skin end
 
-    local clothingOnly = extractClothingOnly(currentSkin)
+    ok, skin = pcall(function()
+        return exports['rcore_clothing']:getPlayerClothing()
+    end)
+    if ok and skin then return skin end
+
+    -- Last resort: the saved skin from the database
+    return lib.callback.await('p_bridge/server/getPlayerSkin', false)
+end
+
+local function applyRcoreSkin(skinData)
+    local ok = pcall(function()
+        exports['rcore_clothing']:setPlayerSkin(skinData, false)
+    end)
+    if ok then return true end
+
+    ok = pcall(function()
+        exports['rcore_clothing']:setPedSkin(cache.ped, skinData)
+    end)
+    if not ok then
+        lib.print.error('[Appearance] rcore_clothing: no working skin-apply export (tried setPlayerSkin, setPedSkin) - update rcore_clothing')
+    end
+    return ok
+end
+
+Bridge.Appearance.fetchCurrentSkin = function()
+    local clothingOnly = extractClothingOnly(getCurrentRcoreSkin())
 
     if Config.Debug then
         lib.print.info('[Appearance] Fetched current clothing only:', clothingOnly)
@@ -167,7 +197,7 @@ Bridge.Appearance.setPlayerSkin = function(skinData)
         return
     end
 
-    exports['rcore_clothing']:setPlayerSkin(skinData)
+    applyRcoreSkin(skinData)
 
     if Config.Debug then
         lib.print.info('[Appearance] Set full player skin:', skinData)
@@ -182,11 +212,11 @@ Bridge.Appearance.setPlayerClothing = function(clothingData)
         return
     end
 
-    local currentSkin = exports['rcore_clothing']:getPlayerSkin(false)
+    local currentSkin = getCurrentRcoreSkin()
 
     local mergedSkin = mergeClothingIntoSkin(currentSkin, clothingData)
 
-    exports['rcore_clothing']:setPlayerSkin(mergedSkin)
+    applyRcoreSkin(mergedSkin)
 
     if Config.Debug then
         lib.print.info('[Appearance] Set player clothing only:', extractClothingOnly(clothingData))
