@@ -184,6 +184,7 @@ Config.Society = 'auto'
     snipe-banking - Snipe Banking
     prism_banking - Prism Banking
     oxide-banking - Oxide Banking
+    bablo-banking - Bablo Banking
     none - no society system
 
     -- open ticket on our discord if you want to add your society system [discord.gg/piotreqscripts]
@@ -201,6 +202,7 @@ Config.BossMenu = 'auto'
     xnr-bossmenu - Xandir Boss Menu
     codem-bossmenu - CodeM Boss Menu
     g-bossmenu - g-bossmenu
+    bablo-bossmenu - Bablo Boss Menu
     standalone - no boss menu system
 
     -- open ticket on our discord if you want to add your boss menu system [discord.gg/piotreqscripts]
