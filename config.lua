@@ -107,7 +107,8 @@ Config.Appearance = 'p_appearance'
 Config.CarKeys = 'auto'
 --[[
     auto - will try to detect car keys system automatically
-    p_carkeys - pScripts Car Keys
+    p_vehiclekeys - pScripts Car Keys [New - GitHub]
+    p_carkeys - pScripts Car Keys [Old]
     qb-vehiclekeys - QBCore Vehicle Keys
     qbx_vehiclekeys - QBX Vehicle Keys
     wasabi_carlock - Wasabi Car Lock
