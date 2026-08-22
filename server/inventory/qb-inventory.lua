@@ -38,6 +38,7 @@ RegisterNetEvent('p_bridge/inventory/openInventory', function(invType, data)
             exports['qb-inventory']:OpenInventoryById(_source, tonumber(data))
         else
             -- legacy build: event-based, uses the handler's source
+            TriggerClientEvent('inventory:client:SetCurrentStash', _source, 'otherplayer')
             TriggerEvent('inventory:server:OpenInventory', 'otherplayer', tostring(data))
         end
     else
