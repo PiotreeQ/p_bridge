@@ -12,46 +12,35 @@ end
 
 Bridge.Appearance = {}
 
-local CLOTHING_KEYS = {
-    tshirt_1 = true,
-    tshirt_2 = true,
-    torso_1 = true,
-    torso_2 = true,
-    decals_1 = true,
-    decals_2 = true,
-    arms = true,
-    arms_2 = true,
+local persistGeneration = 0
 
-    pants_1 = true,
-    pants_2 = true,
-    shoes_1 = true,
-    shoes_2 = true,
+local function queuePersistCurrentSkin()
+    persistGeneration = persistGeneration + 1
+    local generation = persistGeneration
 
-    mask_1 = true,
-    mask_2 = true,
-    bproof_1 = true,
-    bproof_2 = true,
-    chain_1 = true,
-    chain_2 = true,
-    bags_1 = true,
-    bags_2 = true,
+    CreateThread(function()
+        Wait(1500)
+        if generation ~= persistGeneration then
+            return
+        end
 
-    helmet_1 = true,
-    helmet_2 = true,
-    glasses_1 = true,
-    glasses_2 = true,
-    ears_1 = true,
-    ears_2 = true,
-    watches_1 = true,
-    watches_2 = true,
-    bracelets_1 = true,
-    bracelets_2 = true,
-}
+        if GetResourceState('rcore_clothing') ~= 'started' then
+            return
+        end
+
+        TriggerEvent('rcore_clothing:saveCurrentSkin')
+
+        if Config.Debug then
+            lib.print.info('[Appearance] Persisted current RCore skin after wardrobe finished')
+        end
+    end)
+end
 
 local function decodeIfNeeded(data)
     if type(data) == 'string' then
         local ok, decoded = pcall(json.decode, data)
-        if ok and decoded then
+
+        if ok then
             return decoded
         end
 
@@ -62,112 +51,150 @@ local function decodeIfNeeded(data)
     return data
 end
 
-local function cloneTable(data)
-    if type(data) ~= 'table' then return data end
+local function isNonEmptyTable(data)
+    return type(data) == 'table' and next(data) ~= nil
+end
 
-    local copy = {}
+local function unwrapSkin(data)
+    data = decodeIfNeeded(data)
 
-    for k, v in pairs(data) do
-        if type(v) == 'table' then
-            copy[k] = cloneTable(v)
-        else
-            copy[k] = v
+    if type(data) ~= 'table' then
+        return data
+    end
+
+    if data.skin ~= nil and (data.ped_model ~= nil or data.model ~= nil) then
+        local skin = decodeIfNeeded(data.skin)
+
+        if type(skin) == 'table' then
+            return skin
         end
     end
 
-    return copy
+    return data
 end
 
-local function extractClothingOnly(skinData)
-    skinData = decodeIfNeeded(skinData)
+local function isNativeRcoreClothing(data)
+    data = unwrapSkin(data)
 
-    if not skinData or type(skinData) ~= 'table' then
-        lib.print.error('[Appearance] Skin data is nil or not a table!')
-        return {}
+    if type(data) ~= 'table' then
+        return false
     end
 
-    local clothing = {}
-
-    for key, value in pairs(skinData) do
-        if CLOTHING_KEYS[key] then
-            clothing[key] = value
-        end
+    if type(data.components) ~= 'table' and type(data.props) ~= 'table' then
+        return false
     end
 
-    if type(skinData.components) == 'table' then
-        clothing.components = cloneTable(skinData.components)
-    end
-
-    if type(skinData.props) == 'table' then
-        clothing.props = cloneTable(skinData.props)
-    end
-
-    return clothing
+    return true
 end
 
-local function mergeClothingIntoSkin(baseSkin, clothingData)
-    baseSkin = decodeIfNeeded(baseSkin)
-    clothingData = decodeIfNeeded(clothingData)
+local function getNativeCurrentClothing()
 
-    if not baseSkin or type(baseSkin) ~= 'table' then
-        baseSkin = {}
-    end
-
-    if not clothingData or type(clothingData) ~= 'table' then
-        lib.print.error('[Appearance] Clothing data is nil or not a table!')
-        return baseSkin
-    end
-
-    local mergedSkin = cloneTable(baseSkin)
-    local clothingOnly = extractClothingOnly(clothingData)
-
-    for key, value in pairs(clothingOnly) do
-        mergedSkin[key] = value
-    end
-
-    return mergedSkin
-end
-
--- rcore_clothing builds differ in which exports exist (older ones lack
--- getPlayerSkin/setPlayerSkin), so every export call is guarded with fallbacks.
-local function getCurrentRcoreSkin()
     local ok, skin = pcall(function()
         return exports['rcore_clothing']:getPlayerSkin(false)
     end)
-    if ok and skin then return skin end
+
+    skin = unwrapSkin(skin)
+
+    if ok and isNonEmptyTable(skin) then
+        if Config.Debug then
+            lib.print.info('[Appearance] RCore getPlayerSkin(false):', skin)
+        end
+
+        return skin
+    end
 
     ok, skin = pcall(function()
         return exports['rcore_clothing']:getPlayerClothing()
     end)
-    if ok and skin then return skin end
 
-    -- Last resort: the saved skin from the database
-    return lib.callback.await('p_bridge/server/getPlayerSkin', false)
+    skin = unwrapSkin(skin)
+
+    if ok and isNonEmptyTable(skin) then
+        if Config.Debug then
+            lib.print.info('[Appearance] RCore getPlayerClothing():', skin)
+        end
+
+        return skin
+    end
+
+    lib.print.error('[Appearance] rcore_clothing returned no native clothing data. Outfit was NOT captured.')
+    return nil
 end
 
-local function applyRcoreSkin(skinData)
-    local ok = pcall(function()
+local function applyNativeRcoreClothing(clothingData)
+    clothingData = unwrapSkin(clothingData)
+
+    if not isNonEmptyTable(clothingData) then
+        lib.print.error('[Appearance] Native RCore clothing payload is empty')
+        return false
+    end
+
+    local ped = PlayerPedId()
+
+    local ok, err = pcall(function()
+        exports['rcore_clothing']:setPedSkin(ped, clothingData)
+    end)
+
+    if not ok then
+        lib.print.error(('[Appearance] rcore_clothing:setPedSkin failed: %s'):format(tostring(err)))
+        return false
+    end
+
+    pcall(function()
+        exports['rcore_clothing']:fixArms()
+    end)
+
+    queuePersistCurrentSkin()
+
+    if Config.Debug then
+        lib.print.info('[Appearance] Applied native RCore clothing:', clothingData)
+        lib.print.info('[Appearance] Queued RCore persistence after wardrobe closes')
+    end
+
+    return true
+end
+
+local function applyFullRcoreSkin(skinData)
+    skinData = unwrapSkin(skinData)
+
+    if not isNonEmptyTable(skinData) then
+        lib.print.error('[Appearance] Full RCore skin payload is empty')
+        return false
+    end
+
+    local ok, err = pcall(function()
         exports['rcore_clothing']:setPlayerSkin(skinData, false)
     end)
-    if ok then return true end
 
-    ok = pcall(function()
-        exports['rcore_clothing']:setPedSkin(cache.ped, skinData)
-    end)
-    if not ok then
-        lib.print.error('[Appearance] rcore_clothing: no working skin-apply export (tried setPlayerSkin, setPedSkin) - update rcore_clothing')
+    if ok then
+        return true
     end
-    return ok
+
+    ok, err = pcall(function()
+        exports['rcore_clothing']:setPedSkin(PlayerPedId(), skinData)
+    end)
+
+    if not ok then
+        lib.print.error(('[Appearance] Failed to apply RCore skin: %s'):format(tostring(err)))
+        return false
+    end
+
+    return true
 end
 
 Bridge.Appearance.fetchCurrentSkin = function()
-    local clothingOnly = extractClothingOnly(getCurrentRcoreSkin())
 
-    if Config.Debug then
-        lib.print.info('[Appearance] Fetched current clothing only:', clothingOnly)
+    local clothing = getNativeCurrentClothing()
+
+    if not clothing then
+        return nil
     end
 
-    return clothingOnly
+    if Config.Debug then
+        lib.print.info('[Appearance] Captured native RCore wardrobe outfit:', clothing)
+    end
+
+    return clothing
 end
 
 Bridge.Appearance.fetchDatabaseSkin = function()
@@ -181,6 +208,8 @@ Bridge.Appearance.fetchDatabaseSkin = function()
 end
 
 Bridge.Appearance.convertSkinFormat = function(skinData)
+    skinData = decodeIfNeeded(skinData)
+
     if not skinData or type(skinData) ~= 'table' then
         lib.print.error('[Appearance] Skin data is nil or not a table!')
         return
@@ -192,34 +221,44 @@ end
 Bridge.Appearance.setPlayerSkin = function(skinData)
     skinData = decodeIfNeeded(skinData)
 
-    if not skinData or type(skinData) ~= 'table' then
+    if not isNonEmptyTable(skinData) then
         lib.print.error('[Appearance] Skin data is nil or empty!')
-        return
+        return false
     end
 
-    applyRcoreSkin(skinData)
+    local applied = applyFullRcoreSkin(skinData)
+
+    if applied then
+        queuePersistCurrentSkin()
+    end
 
     if Config.Debug then
-        lib.print.info('[Appearance] Set full player skin:', skinData)
+        lib.print.info('[Appearance] Full skin applied:', applied)
+        if applied then
+            lib.print.info('[Appearance] Queued full-skin persistence after wardrobe closes')
+        end
     end
+
+    return applied
 end
 
 Bridge.Appearance.setPlayerClothing = function(clothingData)
     clothingData = decodeIfNeeded(clothingData)
 
-    if not clothingData or type(clothingData) ~= 'table' then
+    if not isNonEmptyTable(clothingData) then
         lib.print.error('[Appearance] Clothing data is nil or empty!')
-        return
+        return false
     end
 
-    local currentSkin = getCurrentRcoreSkin()
+    if not isNativeRcoreClothing(clothingData) then
+        lib.print.error('[Appearance] This police outfit is not saved in native rcore_clothing format. Recreate this outfit after installing the RCore bridge fix.')
 
-    local mergedSkin = mergeClothingIntoSkin(currentSkin, clothingData)
+        if Config.Debug then
+            lib.print.info('[Appearance] Rejected non-RCore wardrobe payload:', clothingData)
+        end
 
-    applyRcoreSkin(mergedSkin)
-
-    if Config.Debug then
-        lib.print.info('[Appearance] Set player clothing only:', extractClothingOnly(clothingData))
-        lib.print.info('[Appearance] Final merged skin applied:', mergedSkin)
+        return false
     end
+
+    return applyNativeRcoreClothing(clothingData)
 end

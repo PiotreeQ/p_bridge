@@ -12,9 +12,33 @@ end
 
 QBCore = exports['qb-core']:GetCoreObject()
 
+-- qb-ambulancejob tracks death only in player metadata (isdead / inlaststand)
+-- and never sets a statebag, while the ped itself is resurrected into an
+-- animation - so neither statebag nor native checks see the player as dead.
+-- Mirror the metadata into the replicated 'isDead' statebag. Only ever clear
+-- a value this bridge set itself, so death scripts that manage the statebag
+-- on their own are never overridden.
+local deadSetByBridge = false
+local function syncDeadState(playerData)
+    local meta = playerData and playerData.metadata
+    if type(meta) ~= 'table' then return end
+
+    local metaDead = (meta.isdead or meta.inlaststand) and true or false
+    local state = LocalPlayer.state
+
+    if metaDead and not state.isDead then
+        state:set('isDead', true, true)
+        deadSetByBridge = true
+    elseif not metaDead and deadSetByBridge and state.isDead then
+        state:set('isDead', false, true)
+        deadSetByBridge = false
+    end
+end
+
 -- UPDATE PLAYER DATA
-RegisterNetEvent('QBCore:Player:SetPlayerData', function(xPlayer) 
-    QBCore.PlayerData = xPlayer 
+RegisterNetEvent('QBCore:Player:SetPlayerData', function(xPlayer)
+    QBCore.PlayerData = xPlayer
+    syncDeadState(xPlayer)
     TriggerEvent('p_bridge/client/setPlayerData', QBCore.PlayerData)
 end)
 
@@ -22,7 +46,9 @@ AddEventHandler('onClientResourceStart', function(resourceName)
     if resourceName ~= cache.resource then return end
 
     Citizen.Wait(1000)
-    TriggerEvent('p_bridge/client/setPlayerData', QBCore.Functions.GetPlayerData())
+    local playerData = QBCore.Functions.GetPlayerData()
+    syncDeadState(playerData)
+    TriggerEvent('p_bridge/client/setPlayerData', playerData)
 end)
 
 Bridge.Framework = {}

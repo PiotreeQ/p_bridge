@@ -12,7 +12,28 @@ end
 
 Bridge.Framework = {}
 
-RegisterNetEvent('QBCore:Player:SetPlayerData', function(xPlayer) 
+-- Mirror qb-ambulancejob style death metadata (isdead / inlaststand) into
+-- the replicated 'isDead' statebag; see qb.lua for the rationale. Only clears
+-- a value this bridge set itself.
+local deadSetByBridge = false
+local function syncDeadState(playerData)
+    local meta = playerData and playerData.metadata
+    if type(meta) ~= 'table' then return end
+
+    local metaDead = (meta.isdead or meta.inlaststand) and true or false
+    local state = LocalPlayer.state
+
+    if metaDead and not state.isDead then
+        state:set('isDead', true, true)
+        deadSetByBridge = true
+    elseif not metaDead and deadSetByBridge and state.isDead then
+        state:set('isDead', false, true)
+        deadSetByBridge = false
+    end
+end
+
+RegisterNetEvent('QBCore:Player:SetPlayerData', function(xPlayer)
+    syncDeadState(xPlayer)
     TriggerEvent('p_bridge/client/setPlayerData', xPlayer)
 end)
 
