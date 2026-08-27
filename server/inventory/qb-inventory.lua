@@ -62,11 +62,23 @@ end)
 --@param playerId: number [existing player id]
 --@return items: table [{name: string, amount: number, metadata: table, slot: number}]
 Bridge.Inventory.getPlayerItems = function(playerId)
-    if newApi() then
-        return exports['qb-inventory']:GetInventory(playerId)?.items or {}
-    end
+    -- Both generations keep player items on PlayerData; the rewrite's
+    -- GetInventory export only resolves stash/drop ids, so asking it for a
+    -- player source returns nil. Return a snapshot so callers can add/remove
+    -- while iterating without mutating the live inventory table.
     local Player = QBCore and QBCore.Functions.GetPlayer(tonumber(playerId))
-    return Player and Player.PlayerData.items or {}
+    local items = Player and Player.PlayerData.items
+    if not items and newApi() then
+        items = exports['qb-inventory']:GetInventory(playerId)?.items
+    end
+
+    local out = {}
+    for _, item in pairs(items or {}) do
+        if item and item.name then
+            out[#out + 1] = item
+        end
+    end
+    return out
 end
 
 --@param prefix: string [prefix for the drop]
@@ -90,8 +102,26 @@ end
 --@param itemCount: number [amount of items to remove]
 --@param itemMetadata: table [item metadata, optional]
 --@param itemSlot: number [item slot, optional]
+-- The rewrite only flushes a stash to the `inventories` table when a player
+-- closes its UI; server-side edits (jail locker moves, take-all) would be lost
+-- on restart unless written through here.
+local function persistStash(stashId)
+    if type(stashId) ~= 'string' or not newApi() then return end
+    local inv = exports['qb-inventory']:GetInventory(stashId)
+    if not inv or not inv.items then return end
+    pcall(MySQL.query.await,
+        'INSERT INTO inventories (identifier, items) VALUES (?, ?) ON DUPLICATE KEY UPDATE items = VALUES(items)',
+        { stashId, json.encode(inv.items) })
+end
+
 Bridge.Inventory.removeItem = function(playerId, itemName, itemCount, itemMetadata, itemSlot)
-    exports['qb-inventory']:RemoveItem(playerId, itemName, itemCount, itemSlot)
+    local ok, result = pcall(function()
+        return exports['qb-inventory']:RemoveItem(playerId, itemName, itemCount, itemSlot, 'p_bridge:removeItem')
+    end)
+    if ok and result ~= false then
+        persistStash(playerId)
+    end
+    return ok and result or nil
 end
 
 --@param playerId: number [existing player id]
@@ -268,21 +298,31 @@ Bridge.Inventory.addItemToStash = function(stashId, itemName, itemCount, itemMet
     -- unknown (creating unconditionally could shadow a DB-persisted stash).
     local function tryAdd()
         local ok, success = pcall(function()
-            return exports['qb-inventory']:AddItem(stashId, itemName, itemCount, false, itemMetadata or false, 'p_bridge:addItemToStash')
+            return exports['qb-inventory']:AddItem(stashId, itemName, itemCount, nil, itemMetadata, 'p_bridge:addItemToStash')
         end)
+        if not ok and Config.Debug then
+            lib.print.warn(('[Inventory] AddItem to stash %s failed: %s'):format(stashId, tostring(success)))
+        end
         return ok and success and true or false
     end
 
-    if tryAdd() then return true end
+    -- The rewrite loads every persisted stash into memory on start, so a
+    -- missing entry really is a new locker and CreateInventory is safe.
+    if not exports['qb-inventory']:GetInventory(stashId) then
+        pcall(function()
+            exports['qb-inventory']:CreateInventory(stashId, {
+                label = stashId,
+                slots = stashSlots or 50,
+                maxweight = stashMaxWeight or 500000,
+            })
+        end)
+    end
 
-    pcall(function()
-        exports['qb-inventory']:CreateInventory(stashId, {
-            label = stashId,
-            slots = stashSlots or 50,
-            maxweight = stashMaxWeight or 500000,
-        })
-    end)
-    return tryAdd()
+    local added = tryAdd()
+    if added then
+        persistStash(stashId)
+    end
+    return added
 end
 
 ---@param playerId: number|string [player id or stash id]
