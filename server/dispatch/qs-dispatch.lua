@@ -25,6 +25,7 @@ Bridge.Dispatch = {}
 Bridge.Dispatch.SendAlert = function(playerId, data)
     local plyPed = GetPlayerPed(playerId)
     local plyCoords = GetEntityCoords(plyPed)
+    data.time = data.time or 5
     TriggerEvent('qs-dispatch:server:CreateDispatchCall', {
         job = data.job,
         callLocation = vector3(plyCoords.x, plyCoords.y, plyCoords.z),
