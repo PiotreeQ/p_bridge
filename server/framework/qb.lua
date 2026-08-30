@@ -382,9 +382,16 @@ Bridge.Framework.removeMoney = function(playerId, account, amount)
 
     local accounts = {
         ['money'] = 'cash',
+        ['cash'] = 'cash',
         ['bank'] = 'bank',
-        ['black_money'] = 'crypto'
+        ['black_money'] = 'crypto',
+        ['crypto'] = 'crypto',
     }
+    -- Unknown account names would hand qb-core a nil moneytype and crash
+    if not accounts[account] then
+        lib.print.error(('Unknown account \'%s\' (invoker: %s)'):format(tostring(account), GetInvokingResource() or GetCurrentResourceName()))
+        return false
+    end
     xPlayer.Functions.RemoveMoney(accounts[account], amount)
     return true
 end
@@ -404,9 +411,16 @@ Bridge.Framework.addMoney = function(playerId, account, amount)
 
     local accounts = {
         ['money'] = 'cash',
+        ['cash'] = 'cash',
         ['bank'] = 'bank',
-        ['black_money'] = 'crypto'
+        ['black_money'] = 'crypto',
+        ['crypto'] = 'crypto',
     }
+    -- Unknown account names would hand qb-core a nil moneytype and crash
+    if not accounts[account] then
+        lib.print.error(('Unknown account \'%s\' (invoker: %s)'):format(tostring(account), GetInvokingResource() or GetCurrentResourceName()))
+        return false
+    end
     xPlayer.Functions.AddMoney(accounts[account], amount)
     return true
 end
