@@ -58,6 +58,7 @@ Config.Inventory = 'auto'
     origen_inventory - Origen Inventory
     jaksam_inventory - Jaksam Inventory
     one_inventory - One Studios Inventory
+    hex_4_inventory - HEX Inventory v4
     standalone - Standalone framework inventory
 
     -- open ticket on our discord if you want to add your inventory system [discord.gg/piotreqscripts]
