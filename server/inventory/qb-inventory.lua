@@ -188,6 +188,16 @@ Bridge.Inventory.createShop = function(shopName, data)
     end
 end
 
+-- live item data for the client bridge: qb-inventory 2.0 no longer syncs item
+-- changes into the client's PlayerData, so the client asks the server instead
+lib.callback.register('p_bridge/inventory/getPlayerItems', function(source)
+    return Bridge.Inventory.getPlayerItems(source) or {}
+end)
+
+lib.callback.register('p_bridge/inventory/getItemCount', function(source, itemName, itemMetadata)
+    return Bridge.Inventory.getItemCount(source, itemName, itemMetadata) or 0
+end)
+
 ---@param invId: number|string [player id or stash id]
 ---@return inventory: table|nil [{ items = { [slot] = { name, amount, info, slot } } }]
 Bridge.Inventory.getInventory = function(invId)
