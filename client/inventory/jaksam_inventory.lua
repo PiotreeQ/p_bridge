@@ -13,6 +13,15 @@ end
 Bridge.Inventory = {}
 
 Bridge.Inventory.openInventory = function(invType, data)
+    -- Another player's inventory (search) can only be opened from the server with
+    -- forceOpenInventory; the client openInventory export takes inventory ids only.
+    if invType == 'player' then
+        local targetId = tonumber(type(data) == 'table' and (data.id or data.owner) or data)
+        if not targetId then return end
+        TriggerServerEvent('p_bridge/inventory/openInventory', invType, targetId)
+        return
+    end
+
     local invId = nil
     if type(data) == 'table' then
         if data.owner then

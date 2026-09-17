@@ -12,6 +12,18 @@ end
 
 Bridge.Inventory = {}
 
+--@param invType: string [inventory type, only 'player' is routed here]
+--@param data: number|table [target player id, or { id = targetId }]
+RegisterNetEvent('p_bridge/inventory/openInventory', function(invType, data)
+    local _source = source
+    if invType ~= 'player' then return end
+
+    local targetId = tonumber(type(data) == 'table' and (data.id or data.owner) or data)
+    if not targetId then return end
+
+    exports['jaksam_inventory']:forceOpenInventory(_source, targetId)
+end)
+
 --@param playerId: number [existing player id]
 --@return items: table [{name: string, amount: number, metadata: table, slot: number}]
 Bridge.Inventory.getPlayerItems = function(playerId)
