@@ -187,6 +187,8 @@ Config.Society = 'auto'
     prism_banking - Prism Banking
     oxide-banking - Oxide Banking
     bablo-banking - Bablo Banking
+    m-Banking - mScripts Banking
+    m-BossMenu - mScripts Boss Menu
     none - no society system
 
     -- open ticket on our discord if you want to add your society system [discord.gg/piotreqscripts]
@@ -205,6 +207,7 @@ Config.BossMenu = 'auto'
     codem-bossmenu - CodeM Boss Menu
     g-bossmenu - g-bossmenu
     bablo-bossmenu - Bablo Boss Menu
+    m-BossMenu - mScripts Boss Menu
     standalone - no boss menu system
 
     -- open ticket on our discord if you want to add your boss menu system [discord.gg/piotreqscripts]
