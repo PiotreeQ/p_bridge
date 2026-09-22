@@ -70,7 +70,12 @@ RegisterNetEvent('p_bridge/inventory/openInventory', function(invType, data)
     elseif invType == 'player' then
         local targetId = tonumber(type(data) == 'table' and data.id or data)
         if not targetId then return end
-        exports['hex_4_inventory']:OpenInventory(_source, { type = 'player', id = targetId })
+        if not GetPlayerName(targetId) then return end
+        exports['hex_4_inventory']:OpenInventory(_source, {
+            id = targetId,
+            type = 'player',
+            title = ('Player: %s'):format(GetPlayerName(targetId)),
+        })
     elseif invType == 'shop' then
         lib.print.error(('hex_4_inventory has no shop export, create the shop [%s] in hex_4_inventory config'):format(data and data.type or 'unknown'))
     end
