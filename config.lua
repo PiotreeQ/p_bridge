@@ -100,6 +100,7 @@ Config.Appearance = 'p_appearance'
     st_clothing - ST Clothing
     um-clothing - UM Clothing
     op-clothing - OP Clothing [OTHERPLANET]
+    jc_appearance - jota-dev Appearance System
 
     -- open ticket on our discord if you want to add your appearance system [discord.gg/piotreqscripts]
 ]]
