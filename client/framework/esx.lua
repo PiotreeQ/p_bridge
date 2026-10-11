@@ -35,6 +35,18 @@ AddEventHandler('onClientResourceStart', function(resourceName)
     TriggerEvent('p_bridge/client/setPlayerData', ESX.PlayerData)
 end)
 
+-- Live player data from es_extended. ESX here is a copy of the shared object, its PlayerData changes only
+-- with the events above, so a missed update left an old (or empty -> unemployed) job in it.
+--@return table [PlayerData, empty table before the character is loaded]
+local function getPlayerData()
+    local playerData = ESX.GetPlayerData()
+    if type(playerData) == 'table' and next(playerData) then
+        ESX.PlayerData = playerData
+        return playerData
+    end
+    return ESX.PlayerData or {}
+end
+
 Bridge.Framework = {}
 
 --@return boolean [true if player is loaded, false otherwise]
@@ -42,14 +54,14 @@ Bridge.Framework.isPlayerLoaded = function()
     return ESX.IsPlayerLoaded()
 end
 
---@return { name: string, label: string, grade: number }
+--@return { name: string, label: string, grade: number } [ESX job table, also grade_name, grade_label, onDuty]
 Bridge.Framework.fetchPlayerJob = function()
-    return ESX.PlayerData?.job or { name = 'unemployed', label = 'Unemployed', grade = 0 } -- if PlayerData is not loaded yet, return a default job
+    return getPlayerData().job or { name = 'unemployed', label = 'Unemployed', grade = 0 } -- if PlayerData is not loaded yet, return a default job
 end
 
 --@return identifier: string [example 'char1:123456']
 Bridge.Framework.getIdentifier = function()
-    local identifier = ESX.PlayerData?.identifier
+    local identifier = getPlayerData().identifier
     if not identifier then
         lib.print.error('ESX PlayerData not loaded yet. Please wait for the playerLoaded event.')
         return nil
@@ -60,7 +72,8 @@ end
 
 --@return name: string [example 'John Doe']
 Bridge.Framework.getPlayerName = function()
-    return ('%s %s'):format(ESX.PlayerData?.firstName, ESX.PlayerData?.lastName)
+    local playerData = getPlayerData()
+    return ('%s %s'):format(playerData.firstName or '', playerData.lastName or '')
 end
 
 Bridge.Framework.CheckJobDuty = function()

@@ -54,8 +54,12 @@ end
 
 --@return { name: string, label: string, grade: number }
 Bridge.Framework.fetchPlayerJob = function()
-    local playerData = exports['qbx_core']:GetPlayerData()
-    return playerData?.job and { name = playerData.job.name, label = playerData.job.name, grade = playerData.job.grade.level } or { name = 'unemployed', label = 'Unemployed', grade = 0 } -- if PlayerData is not loaded yet, return a default job
+    local job = exports['qbx_core']:GetPlayerData()?.job
+    if not job then
+        return { name = 'unemployed', label = 'Unemployed', grade = 0 } -- if PlayerData is not loaded yet, return a default job
+    end
+
+    return { name = job.name, label = job.label or job.name, grade = tonumber(job.grade?.level) or 0 }
 end
 
 --@return identifier: string [example 'char1:123456']

@@ -47,9 +47,22 @@ AddEventHandler('onClientResourceStart', function(resourceName)
 
     Citizen.Wait(1000)
     local playerData = QBCore.Functions.GetPlayerData()
+    QBCore.PlayerData = playerData
     syncDeadState(playerData)
     TriggerEvent('p_bridge/client/setPlayerData', playerData)
 end)
+
+-- Live player data from qb-core. QBCore here is a copy of the core object, its PlayerData changes only
+-- with QBCore:Player:SetPlayerData, so a missed update left an old (or empty -> unemployed) job in it.
+--@return table [PlayerData, empty table before the character is loaded]
+local function getPlayerData()
+    local playerData = QBCore.Functions.GetPlayerData()
+    if type(playerData) == 'table' and next(playerData) then
+        QBCore.PlayerData = playerData
+        return playerData
+    end
+    return QBCore.PlayerData or {}
+end
 
 Bridge.Framework = {}
 
@@ -60,12 +73,17 @@ end
 
 --@return { name: string, label: string, grade: number }
 Bridge.Framework.fetchPlayerJob = function()
-    return QBCore.PlayerData?.job and { name = QBCore.PlayerData.job.name, label = QBCore.PlayerData.job.name, grade = QBCore.PlayerData.job.grade.level } or { name = 'unemployed', label = 'Unemployed', grade = 0 } -- if PlayerData is not loaded yet, return a default job
+    local job = getPlayerData().job
+    if not job then
+        return { name = 'unemployed', label = 'Unemployed', grade = 0 } -- if PlayerData is not loaded yet, return a default job
+    end
+
+    return { name = job.name, label = job.label or job.name, grade = tonumber(job.grade?.level) or 0 }
 end
 
 --@return identifier: string [example 'char1:123456']
 Bridge.Framework.getIdentifier = function()
-    local identifier = QBCore.PlayerData?.citizenid
+    local identifier = getPlayerData().citizenid
     if not identifier then
         lib.print.error('QB-Core PlayerData not loaded yet. Please wait for the playerLoaded event.')
         return nil
@@ -76,7 +94,8 @@ end
 
 --@return name: string [example 'John Doe']
 Bridge.Framework.getPlayerName = function()
-    return ('%s %s'):format(QBCore.PlayerData?.charinfo.firstname, QBCore.PlayerData?.charinfo.lastname)
+    local charinfo = getPlayerData().charinfo or {}
+    return ('%s %s'):format(charinfo.firstname or '', charinfo.lastname or '')
 end
 
 Bridge.Framework.CheckJobDuty = function()
@@ -85,6 +104,6 @@ Bridge.Framework.CheckJobDuty = function()
         return dutyData?.status == 1
     end
 
-    local onDuty = QBCore.Functions.GetPlayerData()?.job?.onduty
+    local onDuty = getPlayerData().job?.onduty
     return onDuty == true
 end
