@@ -13,22 +13,44 @@ end
 Bridge.Inventory = {}
 Bridge.Inventory.Items = {}
 
-Citizen.CreateThread(function()
+local function addItemData(name, data)
+    Bridge.Inventory.Items[name] = {
+        name = name,
+        label = data.label,
+        weight = data.weight,
+        description = data.description,
+        image = ('https://cfx-nui-core_inventory/html/img/%s.png'):format(name)
+    }
+end
+
+local function isQBCore()
+    if Config.Framework == 'auto' then
+        return checkResource('qb-core') or checkResource('qbx_core')
+    end
+    return Config.Framework == 'qb' or Config.Framework == 'qbox'
+end
+
+local function loadItems()
+    if isQBCore() then
+        -- QBCore keeps items in shared config instead of the database
+        local core = QBCore or exports['qb-core']:GetCoreObject()
+        for name, data in pairs(core.Shared.Items or {}) do
+            addItemData(name, data)
+        end
+        return
+    end
+
     while not MySQL?.ready do
         Citizen.Wait(100)
     end
 
     local result = MySQL.query.await('SELECT * FROM items')
-    for k, v in ipairs(result) do
-        Bridge.Inventory.Items[v.name] = {
-            name = v.name,
-            label = v.label,
-            weight = v.weight,
-            description = v.description,
-            image = ('https://cfx-nui-core_inventory/html/img/%s.png'):format(v.name)
-        }
+    for k, v in ipairs(result or {}) do
+        addItemData(v.name, v)
     end
-end)
+end
+
+Citizen.CreateThread(loadItems)
 
 --@param playerId: number [existing player id]
 --@return items: table [{name: string, amount: number, metadata: table, slot: number}]
@@ -75,7 +97,7 @@ end
 --@return item: {name: string, label: string, amount: number, metadata: table}
 Bridge.Inventory.getItemSlot = function(playerId, slot)
     local itemData = exports.core_inventory:getItemBySlot(playerId, slot)
-    return itemData and {name = itemData.name, label = itemData.label, amount = itemData.amount, metadata = itemData.metadata or {}} or nil
+    return itemData and {name = itemData.name, label = itemData.label, amount = itemData.amount or itemData.count, metadata = itemData.metadata or itemData.info or {}} or nil
 end
 
 ---@param shopName: string [unique shop name]
