@@ -190,6 +190,7 @@ Config.Society = 'auto'
     bablo-banking - Bablo Banking
     m-Banking - mScripts Banking
     m-BossMenu - mScripts Boss Menu
+    bcs_companymanager - Bagus Code Studio Company Manager
     none - no society system
 
     -- open ticket on our discord if you want to add your society system [discord.gg/piotreqscripts]
@@ -209,6 +210,7 @@ Config.BossMenu = 'auto'
     g-bossmenu - g-bossmenu
     bablo-bossmenu - Bablo Boss Menu
     m-BossMenu - mScripts Boss Menu
+    bcs_companymanager - Bagus Code Studio Company Manager
     standalone - no boss menu system
 
     -- open ticket on our discord if you want to add your boss menu system [discord.gg/piotreqscripts]

@@ -11,7 +11,7 @@ if Config.Debug then
 end
 
 Bridge.Progress = {}
-Bridge.Progress.isActive = false
+local progressActive = false
 
 Bridge.Progress.Start = function(data)
     if data.canCancel == nil then
@@ -22,7 +22,7 @@ Bridge.Progress.Start = function(data)
         data.useWhileDead = false
     end
 
-    Bridge.Progress.isActive = true
+    progressActive = true
     local success = exports['qs-interface']:ProgressBar({
         duration = data.duration or 5000,
         label = data.label or 'Processing...',
@@ -32,7 +32,8 @@ Bridge.Progress.Start = function(data)
         prop = data.prop or nil,
         disable = data.disable or {move = true, car = true, combat = true}
     })
-    Bridge.Progress.isActive = false
+    progressActive = false
+    return success and true or false
 end
 
 Bridge.Progress.StartCircle = function(data)
@@ -44,7 +45,7 @@ Bridge.Progress.StartCircle = function(data)
         data.useWhileDead = false
     end
 
-    Bridge.Progress.isActive = true
+    progressActive = true
     local success = exports['qs-interface']:ProgressBar({
         duration = data.duration or 5000,
         label = data.label or 'Processing...',
@@ -54,11 +55,12 @@ Bridge.Progress.StartCircle = function(data)
         prop = data.prop or nil,
         disable = data.disable or {move = true, car = true, combat = true}
     })
-    Bridge.Progress.isActive = false
+    progressActive = false
+    return success and true or false
 end
 
 Bridge.Progress.isActive = function()
-    return Bridge.Progress.isActive
+    return progressActive
 end
 
 Bridge.Progress.Cancel = function()
