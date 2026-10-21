@@ -64,11 +64,6 @@ local function getPlayerData()
     return QBCore.PlayerData or {}
 end
 
--- EIGENE ANPASSUNG (nach Bridge-Updates erneut einfuegen!)
--- QBCore schickt SetPlayerData beim Login, BEVOR LocalPlayer.state.isLoggedIn gesetzt ist.
--- Scripts wie p_policejob, die dabei isPlayerLoaded() pruefen, verpassen so den Login und
--- funktionieren erst nach einem Neustart. ESX bekommt hier ein eigenes playerLoaded -
--- fuer QB nach OnPlayerLoaded die Daten erneut senden, sobald isLoggedIn wirklich true ist.
 RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function()
     local timeout = GetGameTimer() + 10000
     while not LocalPlayer.state.isLoggedIn and GetGameTimer() < timeout do
