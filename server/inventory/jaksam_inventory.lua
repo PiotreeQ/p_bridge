@@ -127,3 +127,151 @@ end
 Bridge.Inventory.registerHook = function(event, cb, options)
     return nil
 end
+
+local usableItems = {}
+local warnedMissing = {}
+local originalRegisterItem = nil
+local lastUse = {}
+local lastReregister = 0
+local DEBOUNCE_MS = 500
+local ITEM_WAIT_MS = 60000
+
+local reregisterNotify = {
+    en = '%s usable items re-registered',
+    de = '%s benutzbare Items neu angemeldet',
+    pl = 'Ponownie zarejestrowano przedmioty: %s',
+    fr = '%s objets utilisables réenregistrés',
+    es = '%s objetos utilizables registrados de nuevo',
+    it = '%s oggetti utilizzabili registrati di nuovo',
+    tr = '%s kullanılabilir eşya yeniden kaydedildi',
+    ru = 'Повторно зарегистрировано предметов: %s',
+}
+
+local function jaksamKnowsItem(itemName)
+    local ok, data = pcall(function()
+        return exports['jaksam_inventory']:getStaticItem(itemName)
+    end)
+    return ok and data ~= nil
+end
+
+local function registerWithJaksam(itemName)
+    CreateThread(function()
+        while GetResourceState('jaksam_inventory') ~= 'started' do
+            Citizen.Wait(250)
+        end
+
+        local timeout = GetGameTimer() + ITEM_WAIT_MS
+        while not jaksamKnowsItem(itemName) and GetGameTimer() < timeout do
+            Citizen.Wait(500)
+        end
+
+        if not jaksamKnowsItem(itemName) then
+            if not warnedMissing[itemName] then
+                warnedMissing[itemName] = true
+                lib.print.error(('[Inventory] Item "%s" is not defined in jaksam_inventory and cannot be used'):format(itemName))
+            end
+            return
+        end
+
+        local cb = usableItems[itemName]
+        if not cb then return end
+
+        if originalRegisterItem then
+            pcall(originalRegisterItem, itemName, cb)
+        end
+
+        local ok, err = pcall(function()
+            return exports['jaksam_inventory']:registerUsableItem(itemName, cb, 'p_bridge')
+        end)
+
+        if not ok then
+            lib.print.error(('[Inventory] registerUsableItem("%s") failed: %s'):format(itemName, tostring(err)))
+        elseif Config.Debug then
+            lib.print.info(('[Inventory] Registered usable item in jaksam_inventory: %s'):format(itemName))
+        end
+    end)
+end
+
+local function installUsableItemWrapper()
+    local original = Bridge.Framework.registerItem
+    originalRegisterItem = original
+
+    Bridge.Framework.registerItem = function(itemName, itemFunction)
+        local guarded = function(playerId, ...)
+            if Config.Debug then
+                lib.print.info(('[Inventory] Item used: %s (player %s, invoker %s)'):format(
+                    tostring(itemName), tostring(playerId), tostring(GetInvokingResource())))
+            end
+
+            local key = ('%s:%s'):format(tostring(playerId), tostring(itemName))
+            local now = GetGameTimer()
+            if lastUse[key] and (now - lastUse[key]) < DEBOUNCE_MS then return end
+            lastUse[key] = now
+
+            local ok, err = pcall(itemFunction, playerId, ...)
+            if not ok then
+                lib.print.error(('[Inventory] Error in usable item callback "%s": %s'):format(tostring(itemName), tostring(err)))
+            end
+            return err
+        end
+
+        usableItems[itemName] = guarded
+        original(itemName, guarded)
+        registerWithJaksam(itemName)
+    end
+end
+
+if type(Bridge.Framework) == 'table' and type(Bridge.Framework.registerItem) == 'function' then
+    installUsableItemWrapper()
+else
+    lib.print.error('[Inventory] Bridge.Framework is not loaded, usable items will not work with jaksam_inventory. Make sure your framework starts before p_bridge.')
+end
+
+local function reregisterAll(reason)
+    lastReregister = GetGameTimer()
+    local count = 0
+    for itemName in pairs(usableItems) do
+        registerWithJaksam(itemName)
+        count += 1
+    end
+    if Config.Debug then
+        lib.print.info(('[Inventory] Re-registered %s usable items (%s)'):format(count, reason))
+    end
+    return count
+end
+
+lib.addCommand('reitems', {
+    help = 'Re-register all usable items in jaksam_inventory',
+    restricted = 'group.admin',
+}, function(source)
+    local count = reregisterAll('command')
+    lib.print.info(('[Inventory] Re-registering %s usable items'):format(count))
+    if source > 0 then
+        local message = reregisterNotify[Config.Language] or reregisterNotify.en
+        lib.notify(source, { title = message:format(count), type = 'success' })
+    end
+end)
+
+local function scheduleDelayedReregister()
+    CreateThread(function()
+        while GetResourceState('jaksam_inventory') ~= 'started' do
+            Citizen.Wait(500)
+        end
+        for _, delay in ipairs({ 15000, 45000, 120000 }) do
+            Citizen.Wait(delay)
+            reregisterAll(('%ss after jaksam_inventory start'):format(delay // 1000))
+        end
+    end)
+end
+scheduleDelayedReregister()
+
+AddEventHandler('p_bridge/server/playerLoaded', function()
+    if GetGameTimer() - lastReregister < 10000 then return end
+    SetTimeout(2000, function() reregisterAll('player loaded') end)
+end)
+
+AddEventHandler('onResourceStart', function(resourceName)
+    if resourceName ~= 'jaksam_inventory' then return end
+    reregisterAll('jaksam_inventory restarted')
+    scheduleDelayedReregister()
+end)
