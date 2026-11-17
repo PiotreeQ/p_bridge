@@ -22,7 +22,7 @@ end
 --@param items: table [name: string, count: number, metadata: table]
 --@param coords: vector3 [drop coordinates]
 Bridge.Inventory.CustomDrop = function(prefix, items, coords)
-    exports['ox_inventory']:CustomDrop(prefix, items, coords)
+    exports['ox_inventory']:CustomDrop(prefix, InvUtils.dropEntries(items), coords)
 end
 
 --@param playerId: number [existing player id]
@@ -39,9 +39,55 @@ end
 --@param itemCount: number [amount of items to add]
 --@param itemMetadata: table [item metadata, optional]
 --@return success: boolean [whether the item landed in the stash]
-Bridge.Inventory.addItemToStash = function(stashId, itemName, itemCount, itemMetadata)
-    local success = exports['ox_inventory']:AddItem(stashId, itemName, itemCount, itemMetadata)
-    return success and true or false
+Bridge.Inventory.addItemToStash = function(stashId, itemName, itemCount, itemMetadata, stashSlots, stashMaxWeight)
+    -- AddItem only reaches stashes ox knows about; register unknown ids first
+    local okInv, inv = pcall(function() return exports['ox_inventory']:GetInventory(stashId) end)
+    if not okInv or not inv then
+        pcall(function()
+            exports['ox_inventory']:RegisterStash(stashId, stashId, stashSlots or 50, stashMaxWeight or 100000)
+        end)
+    end
+    local ok, success = pcall(function()
+        return exports['ox_inventory']:AddItem(stashId, itemName, itemCount, itemMetadata)
+    end)
+    return ok and success and true or false
+end
+
+--@param stashId: string [stash id]
+--@return items: table [{ name, count, metadata, slot }]
+Bridge.Inventory.getStashItems = function(stashId)
+    local ok, items = pcall(function() return exports['ox_inventory']:GetInventoryItems(stashId) end)
+    return InvUtils.normalizeList(ok and items or nil)
+end
+
+--@param stashId: string [stash id]
+--@param itemName: string [item name]
+--@param itemCount: number [amount to remove]
+--@param itemMetadata: table|nil [metadata filter]
+--@param itemSlot: number|nil [slot]
+--@return success: boolean
+Bridge.Inventory.removeItemFromStash = function(stashId, itemName, itemCount, itemMetadata, itemSlot)
+    local ok, success = pcall(function()
+        return exports['ox_inventory']:RemoveItem(stashId, itemName, itemCount, itemMetadata, itemSlot)
+    end)
+    return ok and success and true or false
+end
+
+--@param playerId: number [existing player id]
+--@return canCarry: boolean
+Bridge.Inventory.canCarryItem = function(playerId, itemName, itemCount)
+    local ok, result = pcall(function()
+        return exports['ox_inventory']:CanCarryItem(playerId, itemName, itemCount or 1)
+    end)
+    if not ok then return true end
+    return result and true or false
+end
+
+--@param playerId: number [existing player id]
+--@return items: table [{ name, count, metadata, slot }]
+Bridge.Inventory.searchPlayerItems = function(playerId, itemName)
+    local ok, slots = pcall(function() return exports['ox_inventory']:Search(playerId, 'slots', itemName) end)
+    return InvUtils.filterByName(InvUtils.normalizeList(ok and slots or nil), itemName)
 end
 
 --@param playerId: number [existing player id]
@@ -50,7 +96,10 @@ end
 --@param itemMetadata: table [item metadata, optional]
 --@param itemSlot: number [item slot, optional]
 Bridge.Inventory.removeItem = function(playerId, itemName, itemCount, itemMetadata, itemSlot)
-    exports['ox_inventory']:RemoveItem(playerId, itemName, itemCount, itemMetadata, itemSlot)
+    local ok, success = pcall(function()
+        return exports['ox_inventory']:RemoveItem(playerId, itemName, itemCount, itemMetadata, itemSlot)
+    end)
+    return ok and success and true or false
 end
 
 --@param playerId: number [existing player id]

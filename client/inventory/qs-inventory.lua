@@ -14,15 +14,15 @@ Bridge.Inventory = {}
 
 Bridge.Inventory.openInventory = function(invType, data)
     if invType == 'stash' then
-        if data.owner then
-            TriggerServerEvent("inventory:server:OpenInventory", "stash", data.id..'_'..data.owner, {
-                maxweight = 250000,
-                slots = 100,
-            })
-            TriggerEvent("inventory:client:SetCurrentStash", data.id..'_'..data.owner)
-        else
-            TriggerServerEvent('p_policejob/inventory/openInventory', invType, data)
-        end
+        -- plain stash id (no 'Stash_' prefix the RegisterStash export would add),
+        -- so it is the same stash AddItemIntoStash / GetStashItems use server-side
+        local stashId, slots, maxWeight, label = Bridge.Utils.resolveStash(data)
+        TriggerServerEvent("inventory:server:OpenInventory", "stash", stashId, {
+            maxweight = maxWeight or 250000,
+            slots = slots or 100,
+            label = label,
+        })
+        TriggerEvent("inventory:client:SetCurrentStash", stashId)
     elseif invType == 'shop' then
         if not data.label then
             data.label = data.type

@@ -14,15 +14,9 @@ Bridge.Inventory = {}
 
 Bridge.Inventory.openInventory = function(invType, data)
     if invType == 'stash' then
-        if data.owner then
-            TriggerServerEvent("inventory:server:OpenInventory", "stash", data.id..'_'..data.owner, {
-                maxweight = 250000,
-                slots = 100,
-            })
-            TriggerEvent("inventory:client:SetCurrentStash", data.id..'_'..data.owner)
-        else
-            TriggerServerEvent('p_bridge/inventory/openInventory', invType, data)
-        end
+        -- server side opens it with OpenInventory(source, stashId, { label, slots, maxweight })
+        -- using the bigger of these sizes and the registered ones
+        TriggerServerEvent('p_bridge/inventory/openInventory', invType, data)
     elseif invType == 'shop' then
         TriggerServerEvent('p_bridge/inventory/openInventory', invType, data)
     elseif invType == 'player' then

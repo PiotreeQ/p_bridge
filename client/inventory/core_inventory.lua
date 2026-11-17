@@ -18,7 +18,9 @@ Bridge.Inventory.openInventory = function(invType, data)
     elseif invType == 'shop' then
         lib.print.error('core_inventory doesnt have export to open shop')
     elseif invType == 'stash' then
-        TriggerServerEvent('core_inventory:server:openInventory', data.owner and ('%s_%s'):format(data.id, data.owner) or data.id, 'stash')
+        -- opened server-side with the documented openInventory export (label +
+        -- registered size applied there), same inventory name the server uses
+        TriggerServerEvent('p_bridge/inventory/openInventory', invType, data)
     end
 end
 

@@ -40,7 +40,7 @@ local function loadItems()
         return
     end
 
-    while not MySQL?.ready do
+    while not (MySQL and MySQL.ready) do
         Citizen.Wait(100)
     end
 
@@ -81,7 +81,10 @@ end
 --@param itemMetadata: table [item metadata, optional]
 --@param itemSlot: number [item slot, optional]
 Bridge.Inventory.removeItem = function(playerId, itemName, itemCount, itemMetadata, itemSlot)
-    exports['core_inventory']:removeItem(playerId, itemName, itemCount)
+    local ok, result = pcall(function()
+        return exports['core_inventory']:removeItem(playerId, itemName, itemCount)
+    end)
+    return ok and result ~= false
 end
 
 --@param playerId: number [existing player id]
@@ -96,8 +99,10 @@ end
 --@param slot: number [item slot]
 --@return item: {name: string, label: string, amount: number, metadata: table}
 Bridge.Inventory.getItemSlot = function(playerId, slot)
-    local itemData = exports.core_inventory:getItemBySlot(playerId, slot)
-    return itemData and {name = itemData.name, label = itemData.label, amount = itemData.amount or itemData.count, metadata = itemData.metadata or itemData.info or {}} or nil
+    local ok, itemData = pcall(function() return exports.core_inventory:getItemBySlot(playerId, slot) end)
+    if not ok or not itemData then return nil end
+    local amount = itemData.amount or itemData.count or 0
+    return {name = itemData.name, label = itemData.label, amount = amount, count = amount, slot = slot, metadata = itemData.metadata or itemData.info or {}}
 end
 
 ---@param shopName: string [unique shop name]
@@ -115,17 +120,96 @@ end
 ---@param label: string [stash label]
 ---@param slots: number [number of slots]
 ---@param weight: number [max weight]
--- core_inventory creates stashes lazily when they are first opened, so nothing
--- to pre-register here; kept for interface parity with ox_inventory.
+-- core_inventory names inventories freely ('<anything unique>') and sizes them
+-- by type ('stash' in Config.Inventories). openInventory with a nil source only
+-- creates/loads the inventory; updateInventorySize grows it when asked.
+-- Grid inventory: there is no weight limit to apply.
+local STASH_TYPE = 'stash'
+local STASH_ROWS = 10 -- slots per row of the default 'stash' type
+
 Bridge.Inventory.registerStash = function(stashId, label, slots, weight)
-    return
+    while GetResourceState('core_inventory') ~= 'started' do
+        Citizen.Wait(100)
+    end
+    pcall(function()
+        exports['core_inventory']:openInventory(nil, stashId, STASH_TYPE, label)
+    end)
+    if tonumber(slots) then
+        pcall(function()
+            exports['core_inventory']:updateInventorySize(stashId, tonumber(slots), STASH_ROWS)
+        end)
+    end
+end
+
+RegisterNetEvent('p_bridge/inventory/openInventory', function(invType, data)
+    local _source = source
+    if invType ~= 'stash' or type(data) ~= 'table' or not data.id then return end
+    local stashId = data.owner and ('%s_%s'):format(data.id, data.owner) or data.id
+    local reg = Bridge.Inventory.getStashInfo and Bridge.Inventory.getStashInfo(stashId) or {}
+    local slots = math.max(tonumber(data.slots) or 0, reg.slots or 0)
+    if slots > 0 and slots > (reg.slots or 0) then
+        pcall(function() exports['core_inventory']:updateInventorySize(stashId, slots, STASH_ROWS) end)
+    end
+    exports['core_inventory']:openInventory(_source, stashId, STASH_TYPE, data.label or reg.label, nil, true)
+end)
+
+--@param stashId: string [stash id]
+--@return items: table [{ name, count, metadata, slot }]
+Bridge.Inventory.getStashItems = function(stashId)
+    local ok, inv = pcall(function() return exports['core_inventory']:getInventory(stashId) end)
+    return InvUtils.normalizeList(ok and inv and (inv.content or inv.items) or nil)
+end
+
+--@return success: boolean
+Bridge.Inventory.addItemToStash = function(stashId, itemName, itemCount, itemMetadata)
+    local ok, result = pcall(function()
+        return exports['core_inventory']:addItem(stashId, itemName, itemCount, itemMetadata or {}, STASH_TYPE)
+    end)
+    return ok and result ~= false
+end
+
+--@return success: boolean
+Bridge.Inventory.removeItemFromStash = function(stashId, itemName, itemCount, itemMetadata, itemSlot)
+    -- removeItem takes the first matching stack and ignores metadata; when a slot
+    -- or metadata matters, remove each planned stack by its unique content id
+    if not itemSlot and not itemMetadata then
+        local ok, result = pcall(function()
+            return exports['core_inventory']:removeItem(stashId, itemName, itemCount, STASH_TYPE)
+        end)
+        return ok and result ~= false
+    end
+
+    local plan = InvUtils.planRemoval(Bridge.Inventory.getStashItems(stashId), itemName, itemCount, itemMetadata, itemSlot)
+    if not plan then return false end
+    for _, step in ipairs(plan) do
+        local okItem, item = pcall(function() return exports['core_inventory']:getItemBySlot(stashId, step.slot) end)
+        local uid = okItem and item and item.id
+        if not uid then return false end
+        local ok, result = pcall(function()
+            return exports['core_inventory']:removeItemExact(stashId, uid, step.count)
+        end)
+        if not ok or result == false then return false end
+    end
+    return true
+end
+
+--@return canCarry: boolean
+Bridge.Inventory.canCarryItem = function(playerId, itemName, itemCount)
+    local ok, result = pcall(function()
+        return exports['core_inventory']:canCarry(playerId, itemName, itemCount or 1)
+    end)
+    if not ok then return true end
+    return result and true or false
 end
 
 ---@param playerId: number|string [player id or stash id]
 ---@param slot: number [slot index]
 ---@param metadata: table [new metadata to write to the slot]
 Bridge.Inventory.setMetadata = function(playerId, slot, metadata)
-    lib.print.error('setMetadata is not supported in core_inventory, please change type in config')
+    local ok = pcall(function()
+        exports['core_inventory']:updateMetadata(playerId, slot, metadata or {})
+    end)
+    return ok
 end
 
 ---@param invId: number|string [player id]

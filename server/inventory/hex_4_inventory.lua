@@ -178,7 +178,7 @@ end
 Bridge.Inventory.getItemSlot = function(playerId, slot)
     for _, item in pairs(Bridge.Inventory.getPlayerItems(playerId)) do
         if item.slot == slot then
-            return { name = item.name, label = item.label, amount = item.amount, metadata = item.metadata or {} }
+            return { name = item.name, label = item.label, amount = item.amount, count = item.amount, slot = item.slot, metadata = item.metadata or {} }
         end
     end
     return nil
@@ -209,10 +209,56 @@ end
 ---@param label: string [stash label]
 ---@param slots: number [number of slots]
 ---@param weight: number [max weight]
--- hex_4_inventory creates custom inventories lazily on first open; we only
--- remember the label/weight so openInventory can pass them to OpenInventory.
+-- hex_4_inventory creates custom inventories on first open or on GetInventory;
+-- we remember the label/weight (weight-only inventory, no slot count) so
+-- OpenInventory always gets the latest (bigger) values, and load it right away
+-- so server-side add/remove/list reach it before anyone opened it.
 Bridge.Inventory.registerStash = function(stashId, label, slots, weight)
-    registeredStashes[stashId] = { label = label, slots = slots, weight = weight }
+    local cur = registeredStashes[stashId] or {}
+    registeredStashes[stashId] = {
+        label = label or cur.label,
+        slots = slots or cur.slots,
+        weight = weight or cur.weight,
+    }
+    pcall(function()
+        exports['hex_4_inventory']:GetInventory(nil, stashInventoryData(stashId))
+    end)
+end
+
+--@param stashId: string [stash id]
+--@return items: table [{ name, count, metadata, slot }]
+Bridge.Inventory.getStashItems = function(stashId)
+    local inv = Bridge.Inventory.getInventory(stashId)
+    if type(inv) ~= 'table' then return {} end
+    return InvUtils.normalizeList(inv.items or inv.inventory or inv)
+end
+
+--@return success: boolean
+-- RemoveItemFromInventory(playerObject, itemData, count, inventoryData, cb) has
+-- no documented return value: one call per matching stack (slot + metadata in
+-- itemData); guard.lua verifies the stash count afterwards.
+Bridge.Inventory.removeItemFromStash = function(stashId, itemName, itemCount, itemMetadata, itemSlot)
+    local plan = InvUtils.planRemoval(Bridge.Inventory.getStashItems(stashId), itemName, itemCount, itemMetadata, itemSlot)
+    if not plan then return false end
+    for _, step in ipairs(plan) do
+        local ok, result = pcall(function()
+            return exports['hex_4_inventory']:RemoveItemFromInventory(nil, {
+                name = itemName, slot = step.slot, metadata = step.metadata,
+            }, step.count, stashInventoryData(stashId))
+        end)
+        if not ok or result == false then return false end
+    end
+    return true
+end
+
+--@return canCarry: boolean
+Bridge.Inventory.canCarryItem = function(playerId, itemName, itemCount)
+    local player = getPlayer(playerId)
+    if player and getFramework() == 'esx' and player.canCarryItem then
+        local ok, result = pcall(player.canCarryItem, itemName, itemCount or 1)
+        if ok then return result and true or false end
+    end
+    return true
 end
 
 --@param stashId: string [stash id]
@@ -224,20 +270,44 @@ end
 -- arguments; server-side inserts have no player, so pass nil and let the
 -- inventory decide. Wrapped in pcall so an unsupported call cannot crash callers.
 Bridge.Inventory.addItemToStash = function(stashId, itemName, itemCount, itemMetadata)
+    local before = InvUtils.countItems(Bridge.Inventory.getStashItems(stashId), itemName)
     local ok, success = pcall(function()
         return exports['hex_4_inventory']:AddItemToInventory(nil, nil, { name = itemName, metadata = itemMetadata or {} }, itemCount, stashInventoryData(stashId))
     end)
-    if not ok and Config.Debug then
-        lib.print.warn(('[Inventory] AddItemToInventory to stash %s failed: %s'):format(stashId, tostring(success)))
+    if not ok then
+        if Config.Debug then
+            lib.print.warn(('[Inventory] AddItemToInventory to stash %s failed: %s'):format(stashId, tostring(success)))
+        end
+        return false
     end
-    return ok and success and true or false
+    if success ~= nil then return success and true or false end
+    -- no return value from this build: check that the stash really grew
+    return InvUtils.countItems(Bridge.Inventory.getStashItems(stashId), itemName) > before
 end
 
 ---@param playerId: number|string [player id or stash id]
 ---@param slot: number [slot index]
 ---@param metadata: table [new metadata to write to the slot]
+-- Player items live in the framework: on QB/QBX PlayerData.items[slot].info is
+-- written through qb-core's setter. ESX and stashes have no slot metadata setter.
 Bridge.Inventory.setMetadata = function(playerId, slot, metadata)
-    lib.print.error('setMetadata is not supported in hex_4_inventory, please change type in config')
+    local fw = getFramework()
+    if tonumber(playerId) and fw == 'qb' then
+        return InvUtils.qbSetPlayerSlotInfo(playerId, slot, metadata or {})
+    elseif tonumber(playerId) and fw == 'qbox' then
+        local ok, result = pcall(function()
+            local player = exports.qbx_core:GetPlayer(tonumber(playerId))
+            local items = player and player.PlayerData.items
+            local item = items and items[tonumber(slot)]
+            if not item then return false end
+            item.info = metadata or {}
+            player.Functions.SetPlayerData('items', items)
+            return true
+        end)
+        return ok and result and true or false
+    end
+    lib.print.error('setMetadata is only supported for QB/QBX players in hex_4_inventory')
+    return false
 end
 
 ---@param invId: number|string [player id or stash id]

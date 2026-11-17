@@ -22,7 +22,7 @@ end
 --@param items: table [name: string, count: number, metadata: table]
 --@param coords: vector3 [drop coordinates]
 Bridge.Inventory.CustomDrop = function(prefix, items, coords)
-    exports['one_inventory']:CreateDrop(coords, items)
+    exports['one_inventory']:CreateDrop(coords, InvUtils.dropEntries(items))
 end
 
 --@param playerId: number [existing player id]
@@ -40,7 +40,10 @@ end
 --@param itemMetadata: table [item metadata, optional]
 --@param itemSlot: number [item slot, optional]
 Bridge.Inventory.removeItem = function(playerId, itemName, itemCount, itemMetadata, itemSlot)
-    exports['one_inventory']:RemoveItem(playerId, itemName, itemCount, itemMetadata, itemSlot)
+    local ok, result = pcall(function()
+        return exports['one_inventory']:RemoveItem(playerId, itemName, itemCount, itemMetadata, itemSlot)
+    end)
+    return ok and result and true or false
 end
 
 --@param playerId: number [existing player id]
@@ -83,17 +86,61 @@ end
 ---@param label: string [stash label]
 ---@param slots: number [number of slots]
 ---@param weight: number [max weight]
--- one_inventory creates stashes when they are first opened ('stash:<name>'),
--- so nothing to pre-register here; kept for interface parity with ox_inventory.
+-- one_inventory has no stash-creation export: 'stash:<name>' inventories are
+-- created on first open (OpenInventory 'stash' with id/slots/maxWeight/label) or
+-- on the first AddItem (defaults 50 slots / 50 kg). The client opens with the
+-- bigger of the caller's and the registered size (guard.lua getStashInfo).
 Bridge.Inventory.registerStash = function(stashId, label, slots, weight)
     return
+end
+
+-- server-side id of a shared stash opened as { id = stashId }
+local function stashInv(stashId)
+    return ('stash:%s'):format(stashId)
+end
+
+--@param stashId: string [stash id]
+--@return items: table [{ name, count, metadata, slot }]
+Bridge.Inventory.getStashItems = function(stashId)
+    local ok, items = pcall(function() return exports['one_inventory']:GetInventoryItems(stashInv(stashId)) end)
+    return InvUtils.normalizeList(ok and items or nil)
+end
+
+--@return success: boolean
+Bridge.Inventory.addItemToStash = function(stashId, itemName, itemCount, itemMetadata)
+    local ok, result = pcall(function()
+        return exports['one_inventory']:AddItem(stashInv(stashId), itemName, itemCount, itemMetadata)
+    end)
+    return ok and result and true or false
+end
+
+--@return success: boolean
+Bridge.Inventory.removeItemFromStash = function(stashId, itemName, itemCount, itemMetadata, itemSlot)
+    local ok, result = pcall(function()
+        return exports['one_inventory']:RemoveItem(stashInv(stashId), itemName, itemCount, itemMetadata, itemSlot)
+    end)
+    return ok and result and true or false
+end
+
+--@return canCarry: boolean
+Bridge.Inventory.canCarryItem = function(playerId, itemName, itemCount)
+    local ok, result = pcall(function()
+        return exports['one_inventory']:CanCarryItem(playerId, itemName, itemCount or 1)
+    end)
+    if not ok then return true end
+    return result and true or false
 end
 
 ---@param playerId: number|string [player id or stash/inventory id]
 ---@param slot: number [slot index]
 ---@param metadata: table [new metadata to write to the slot]
 Bridge.Inventory.setMetadata = function(playerId, slot, metadata)
-    exports['one_inventory']:SetItemMetadata(playerId, slot, metadata)
+    -- plain stash ids map to their 'stash:<id>' inventory
+    local inv = tonumber(playerId) or (tostring(playerId):find(':', 1, true) and playerId or stashInv(playerId))
+    local ok, result = pcall(function()
+        return exports['one_inventory']:SetItemMetadata(inv, slot, metadata or {})
+    end)
+    return ok and result ~= false
 end
 
 ---@param invId: number|string [player id or stash/inventory id]

@@ -41,7 +41,10 @@ end
 --@param itemMetadata: table [item metadata, optional]
 --@param itemSlot: number [item slot, optional]
 Bridge.Inventory.removeItem = function(playerId, itemName, itemCount, itemMetadata, itemSlot)
-    exports['codem-inventory']:RemoveItem(playerId, itemName, itemCount, itemSlot)
+    local ok, result = pcall(function()
+        return exports['codem-inventory']:RemoveItem(playerId, itemName, itemCount, itemSlot)
+    end)
+    return ok and result ~= false
 end
 
 --@param playerId: number [existing player id]
@@ -50,12 +53,8 @@ end
 --@return count: number [amount of items in inventory]
 Bridge.Inventory.getItemCount = function(playerId, itemName, itemMetadata)
     if itemMetadata then
-        local items = exports['codem-inventory']:GetInventory(playerId)
-        for k, v in pairs(items) do
-            if v.name == itemName and v.info and lib.table.matches(v.info, itemMetadata) then
-                return v.amount
-            end
-        end
+        local items = InvUtils.normalizeList(Bridge.Inventory.getPlayerItems(playerId))
+        return InvUtils.countItems(items, itemName, itemMetadata)
     else
         return exports['codem-inventory']:GetItemsTotalAmount(playerId, itemName)
     end
@@ -79,25 +78,77 @@ end
 
 ---@param itemName: string [item name]
 Bridge.Inventory.getItemData = function(itemName)
-    local items = exports['codem-inventory']:GetItemList()
-    return items and items[itemName] or nil
+    local ok, items = pcall(function() return exports['codem-inventory']:GetItemList() end)
+    local item = ok and items and items[itemName]
+    if not item then return nil end
+    item.name = item.name or itemName
+    return item
 end
 
 ---@param stashId: string [unique stash id]
 ---@param label: string [stash label]
 ---@param slots: number [number of slots]
 ---@param weight: number [max weight]
--- codem-inventory creates stashes lazily when they are first opened, so nothing
--- to pre-register here; kept for interface parity with ox_inventory.
+-- codem-inventory creates stashes the first time they are opened and takes the
+-- size from every open ('codem-inventory:server:openstash', stashId, slots,
+-- weight, label); the client opens with the bigger of the caller's and the
+-- registered size (guard.lua getStashInfo), which is how a stash grows.
 Bridge.Inventory.registerStash = function(stashId, label, slots, weight)
     return
+end
+
+-- Stash contents: GetStashItems(stashId) / UpdateStash(stashId, items) are the
+-- documented pair; add/remove edit the slot table and write it back.
+local function loadStash(stashId)
+    local ok, items = pcall(function() return exports['codem-inventory']:GetStashItems(stashId) end)
+    return InvUtils.rekeyBySlot(ok and type(items) == 'table' and items or {})
+end
+
+local function saveStash(stashId, items)
+    local ok, result = pcall(function() return exports['codem-inventory']:UpdateStash(stashId, items) end)
+    return ok and result ~= false
+end
+
+--@param stashId: string [stash id]
+--@return items: table [{ name, count, metadata, slot }]
+Bridge.Inventory.getStashItems = function(stashId)
+    return InvUtils.normalizeList(loadStash(stashId))
+end
+
+--@return success: boolean
+Bridge.Inventory.addItemToStash = function(stashId, itemName, itemCount, itemMetadata, stashSlots, stashMaxWeight)
+    local def = Bridge.Inventory.getItemData(itemName)
+    if not def then return false end
+    local reg = Bridge.Inventory.getStashInfo and Bridge.Inventory.getStashInfo(stashId) or {}
+    local items = loadStash(stashId)
+    if not InvUtils.slotTableAdd(items, def, itemName, itemCount, itemMetadata, stashSlots or reg.slots or 100) then
+        return false
+    end
+    return saveStash(stashId, items)
+end
+
+--@return success: boolean
+Bridge.Inventory.removeItemFromStash = function(stashId, itemName, itemCount, itemMetadata, itemSlot)
+    local items = loadStash(stashId)
+    if not InvUtils.slotTableRemove(items, itemName, itemCount, itemMetadata, itemSlot) then return false end
+    return saveStash(stashId, items)
 end
 
 ---@param playerId: number|string [player id or stash id]
 ---@param slot: number [slot index]
 ---@param metadata: table [new metadata to write to the slot]
 Bridge.Inventory.setMetadata = function(playerId, slot, metadata)
-    lib.print.error('setMetadata is not supported in codem-inventory, please change type in config')
+    if tonumber(playerId) then
+        local ok, result = pcall(function()
+            return exports['codem-inventory']:SetItemMetadata(tonumber(playerId), slot, metadata or {})
+        end)
+        return ok and result ~= false
+    end
+    local items = loadStash(playerId)
+    local item = items[tonumber(slot)]
+    if not item then return false end
+    item.info = metadata or {}
+    return saveStash(playerId, items)
 end
 
 ---@param invId: number|string [player id]

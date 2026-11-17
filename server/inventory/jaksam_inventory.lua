@@ -27,7 +27,8 @@ end)
 --@param playerId: number [existing player id]
 --@return items: table [{name: string, amount: number, metadata: table, slot: number}]
 Bridge.Inventory.getPlayerItems = function(playerId)
-    return exports['jaksam_inventory']:getInventory(playerId)?.items or {}
+    local inv = exports['jaksam_inventory']:getInventory(playerId)
+    return inv and inv.items or {}
 end
 
 --@param prefix: string [prefix for the drop]
@@ -52,7 +53,10 @@ end
 --@param itemMetadata: table [item metadata, optional]
 --@param itemSlot: number [item slot, optional]
 Bridge.Inventory.removeItem = function(playerId, itemName, itemCount, itemMetadata, itemSlot)
-    exports['jaksam_inventory']:removeItem(playerId, itemName, itemCount, itemMetadata, itemSlot)
+    local ok, result = pcall(function()
+        return exports['jaksam_inventory']:removeItem(playerId, itemName, itemCount, itemMetadata, itemSlot)
+    end)
+    return ok and result and true or false
 end
 
 --@param playerId: number [existing player id]
@@ -64,7 +68,10 @@ Bridge.Inventory.getItemCount = function(playerId, itemName, itemMetadata)
 end
 
 Bridge.Inventory.getItemSlot = function(playerId, slot)
-    return exports['jaksam_inventory']:GetSlot(playerId, slot)
+    local ok, item = InvUtils.call('jaksam_inventory', { 'getItemFromSlot', 'GetSlot' }, playerId, slot)
+    if not ok or type(item) ~= 'table' or not item.name then return nil end
+    local amount = item.amount or item.count or 0
+    return { name = item.name, label = item.label, amount = amount, count = amount, slot = slot, metadata = item.metadata or {} }
 end
 
 Bridge.Inventory.createShop = function(shopName, data)
@@ -78,24 +85,81 @@ end
 
 ---@param itemName: string [item name]
 Bridge.Inventory.getItemData = function(itemName)
-    return exports['jaksam_inventory']:getStaticItem(itemName)
+    local ok, item = pcall(function() return exports['jaksam_inventory']:getStaticItem(itemName) end)
+    if not ok or type(item) ~= 'table' then return nil end
+    item.name = item.name or itemName
+    return item
 end
 
 ---@param stashId: string [unique stash id]
 ---@param label: string [stash label]
 ---@param slots: number [number of slots]
----@param weight: number [max weight]
--- jaksam_inventory creates stashes lazily when they are first opened, so nothing
--- to pre-register here; kept for interface parity with ox_inventory.
+---@param weight: number [max weight, grams like ox; jaksam uses kg]
+-- createInventory creates the stash in DB + memory, or returns the existing one
+-- untouched; setInventoryMaxWeight then applies a bigger weight. jaksam has no
+-- export to change the slot count of an existing inventory.
 Bridge.Inventory.registerStash = function(stashId, label, slots, weight)
-    return
+    while GetResourceState('jaksam_inventory') ~= 'started' do
+        Citizen.Wait(100)
+    end
+    local maxWeight = InvUtils.gramsToKg(weight)
+    pcall(function()
+        exports['jaksam_inventory']:createInventory(stashId, label or stashId, {
+            maxSlots = tonumber(slots) or 50,
+            maxWeight = maxWeight or 100,
+        }, nil, 'stash')
+    end)
+    if maxWeight then
+        pcall(function() exports['jaksam_inventory']:setInventoryMaxWeight(stashId, maxWeight) end)
+    end
+end
+
+--@param stashId: string [stash id]
+--@return items: table [{ name, count, metadata, slot }] (jaksam keys items as "SLOT-n")
+Bridge.Inventory.getStashItems = function(stashId)
+    local ok, inv = pcall(function() return exports['jaksam_inventory']:getInventory(stashId) end)
+    return InvUtils.normalizeList(ok and inv and inv.items or nil)
+end
+
+--@return success: boolean
+Bridge.Inventory.addItemToStash = function(stashId, itemName, itemCount, itemMetadata)
+    local ok, result = pcall(function()
+        return exports['jaksam_inventory']:addItem(stashId, itemName, itemCount, itemMetadata)
+    end)
+    return ok and result and true or false
+end
+
+--@return success: boolean
+Bridge.Inventory.removeItemFromStash = function(stashId, itemName, itemCount, itemMetadata, itemSlot)
+    local ok, result = pcall(function()
+        return exports['jaksam_inventory']:removeItem(stashId, itemName, itemCount, itemMetadata, itemSlot)
+    end)
+    return ok and result and true or false
+end
+
+--@return canCarry: boolean
+Bridge.Inventory.canCarryItem = function(playerId, itemName, itemCount)
+    local ok, result = pcall(function()
+        return exports['jaksam_inventory']:canCarryItem(playerId, itemName, itemCount or 1)
+    end)
+    if not ok then return true end
+    return result and true or false
+end
+
+--@return items: table [{ name, count, metadata, slot }]
+Bridge.Inventory.searchPlayerItems = function(playerId, itemName)
+    local ok, items = pcall(function() return exports['jaksam_inventory']:getItemsByName(playerId, itemName) end)
+    return InvUtils.filterByName(InvUtils.normalizeList(ok and items or nil), itemName)
 end
 
 ---@param playerId: number|string [player id or stash id]
 ---@param slot: number [slot index]
 ---@param metadata: table [new metadata to write to the slot]
 Bridge.Inventory.setMetadata = function(playerId, slot, metadata)
-    lib.print.error('setMetadata is not supported in jaksam_inventory, please change type in config')
+    local ok, result = pcall(function()
+        return exports['jaksam_inventory']:setItemMetadataInSlot(playerId, slot, metadata or {})
+    end)
+    return ok and result ~= false
 end
 
 ---@param invId: number|string [player id or stash id]

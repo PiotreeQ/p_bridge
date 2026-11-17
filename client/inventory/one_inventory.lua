@@ -13,6 +13,18 @@ end
 Bridge.Inventory = {}
 
 Bridge.Inventory.openInventory = function(invType, data)
+    if invType == 'stash' and type(data) == 'table' then
+        -- opens the shared 'stash:<id>' inventory the server exports use, with
+        -- the bigger of the caller's and the registered size
+        local stashId, slots, maxWeight, label = Bridge.Utils.resolveStash(data)
+        exports['one_inventory']:OpenInventory('stash', {
+            id = stashId,
+            label = label,
+            slots = slots,
+            maxWeight = maxWeight,
+        })
+        return
+    end
     exports['one_inventory']:OpenInventory(invType, data)
 end
 

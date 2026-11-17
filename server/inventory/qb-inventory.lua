@@ -45,9 +45,15 @@ RegisterNetEvent('p_bridge/inventory/openInventory', function(invType, data)
         -- The inventory id must be a STRING; passing the data table creates a
         -- broken in-memory inventory that never persists.
         local stashId = data.owner and ('%s_%s'):format(data.id, data.owner) or data.id
+        -- registerStash() sizes win when bigger, so a re-registered (enlarged)
+        -- stash opens with its new size
+        local reg = Bridge.Inventory.getStashInfo and Bridge.Inventory.getStashInfo(stashId) or {}
+        local slots = math.max(tonumber(data.slots) or 0, reg.slots or 0)
+        local maxWeight = math.max(tonumber(data.maxWeight) or 0, reg.weight or 0)
+        local label = data.label or reg.label
         local stashData = nil
-        if data.slots or data.maxWeight or data.label then
-            stashData = { slots = data.slots, maxweight = data.maxWeight, label = data.label }
+        if slots > 0 or maxWeight > 0 or label then
+            stashData = { slots = slots > 0 and slots or nil, maxweight = maxWeight > 0 and maxWeight or nil, label = label }
         end
 
         if newApi() then
@@ -69,7 +75,8 @@ Bridge.Inventory.getPlayerItems = function(playerId)
     local Player = QBCore and QBCore.Functions.GetPlayer(tonumber(playerId))
     local items = Player and Player.PlayerData.items
     if not items and newApi() then
-        items = exports['qb-inventory']:GetInventory(playerId)?.items
+        local inv = exports['qb-inventory']:GetInventory(playerId)
+        items = inv and inv.items
     end
 
     local out = {}
@@ -85,6 +92,7 @@ end
 --@param items: table [name: string, count: number, metadata: table]
 --@param coords: vector3 [drop coordinates]
 Bridge.Inventory.CustomDrop = function(prefix, items, coords)
+    -- no documented qb-inventory server export creates a drop from an item list + coords
     lib.print.error('CustomDrop is not supported in qb-inventory, please change type in config')
 end
 
@@ -121,7 +129,7 @@ Bridge.Inventory.removeItem = function(playerId, itemName, itemCount, itemMetada
     if ok and result ~= false then
         persistStash(playerId)
     end
-    return ok and result or nil
+    return ok and result and true or false
 end
 
 --@param playerId: number [existing player id]
@@ -159,8 +167,10 @@ end
 --@param slot: number [item slot]
 --@return item: {name: string, label: string, amount: number, metadata: table}
 Bridge.Inventory.getItemSlot = function(playerId, slot)
-    local itemSlot = exports['qb-inventory']:GetItemBySlot(playerId, slot)
-    return itemSlot and {name = itemSlot.name, label = itemSlot.label, amount = itemSlot.amount, metadata = itemSlot.info or {}} or nil
+    local ok, itemSlot = pcall(function() return exports['qb-inventory']:GetItemBySlot(playerId, slot) end)
+    if not ok or not itemSlot then return nil end
+    local amount = itemSlot.amount or itemSlot.count or 0
+    return {name = itemSlot.name, label = itemSlot.label, amount = amount, count = amount, slot = itemSlot.slot or slot, metadata = itemSlot.info or itemSlot.metadata or {}}
 end
 
 ---@param shopName: string [unique shop name]
@@ -223,10 +233,74 @@ end
 ---@param label: string [stash label]
 ---@param slots: number [number of slots]
 ---@param weight: number [max weight]
--- qb-inventory creates stashes lazily when they are first opened, so nothing to
--- pre-register here; kept for interface parity with ox_inventory.
+-- Rewrite: CreateInventory when the stash is not in memory yet, so AddItem /
+-- RemoveItem / GetInventory reach it before anyone opened it. An existing stash
+-- has no resize export; the open handler passes the (bigger) registered size
+-- and qb's OpenInventory applies it. Legacy: stashes live in `stashitems` and
+-- take their size from the open call, so nothing to create.
 Bridge.Inventory.registerStash = function(stashId, label, slots, weight)
-    return
+    if type(stashId) ~= 'string' or not newApi() then return end
+    local ok, inv = pcall(function() return exports['qb-inventory']:GetInventory(stashId) end)
+    if ok and inv then return end
+    pcall(function()
+        exports['qb-inventory']:CreateInventory(stashId, {
+            label = label or stashId,
+            slots = slots or 50,
+            maxweight = weight or 500000,
+        })
+    end)
+end
+
+--@param stashId: string [stash id]
+--@return items: table [{ name, count, metadata, slot }]
+Bridge.Inventory.getStashItems = function(stashId)
+    if newApi() then
+        local ok, inv = pcall(function() return exports['qb-inventory']:GetInventory(stashId) end)
+        if ok and inv and inv.items then
+            return InvUtils.normalizeList(inv.items)
+        end
+        -- not loaded in memory: fall back to the persisted row
+        local okDb, raw = pcall(MySQL.scalar.await, 'SELECT items FROM inventories WHERE identifier = ?', { stashId })
+        return InvUtils.normalizeList(okDb and raw and json.decode(raw) or nil)
+    end
+    return InvUtils.normalizeList(InvUtils.dbStashLoad(stashId))
+end
+
+--@param stashId: string [stash id]
+--@param itemName: string [item name]
+--@param itemCount: number [amount to remove]
+--@param itemMetadata: table|nil [metadata filter]
+--@param itemSlot: number|nil [slot]
+--@return success: boolean
+Bridge.Inventory.removeItemFromStash = function(stashId, itemName, itemCount, itemMetadata, itemSlot)
+    if not newApi() then
+        local ok, result = pcall(InvUtils.dbStashRemove, stashId, itemName, itemCount, itemMetadata, itemSlot)
+        return ok and result and true or false
+    end
+
+    -- RemoveItem ignores metadata, so remove slot by slot from the matching stacks
+    local plan = InvUtils.planRemoval(Bridge.Inventory.getStashItems(stashId), itemName, itemCount, itemMetadata, itemSlot)
+    if not plan then return false end
+    local removed = true
+    for _, step in ipairs(plan) do
+        local ok, result = pcall(function()
+            return exports['qb-inventory']:RemoveItem(stashId, itemName, step.count, step.slot, 'p_bridge:removeItemFromStash')
+        end)
+        if not ok or result == false then removed = false break end
+    end
+    persistStash(stashId)
+    return removed
+end
+
+--@param playerId: number [existing player id]
+--@return canCarry: boolean
+Bridge.Inventory.canCarryItem = function(playerId, itemName, itemCount)
+    if not newApi() then return true end
+    local ok, result = pcall(function()
+        return exports['qb-inventory']:CanAddItem(playerId, itemName, itemCount or 1)
+    end)
+    if not ok then return true end
+    return result and true or false
 end
 
 -- Legacy qb-inventory keeps stash contents in the `stashitems` table (one JSON
@@ -339,9 +413,28 @@ end
 ---@param slot: number [slot index]
 ---@param metadata: table [new metadata to write to the slot]
 Bridge.Inventory.setMetadata = function(playerId, slot, metadata)
-    -- qb-inventory has no framework-agnostic per-slot metadata setter; use
-    -- ox_inventory if you rely on evidence analysis persisting to the item.
-    lib.print.error('setMetadata is not supported in qb-inventory, please change type in config')
+    metadata = metadata or {}
+    if tonumber(playerId) then
+        -- player items live on PlayerData.items in both generations; qb-core's
+        -- SetPlayerData pushes the change to the client and the save loop
+        return InvUtils.qbSetPlayerSlotInfo(playerId, slot, metadata)
+    end
+
+    -- stash (rewrite only): no setter export, so swap the stack in place
+    if not newApi() then return false end
+    local ok, inv = pcall(function() return exports['qb-inventory']:GetInventory(playerId) end)
+    local item = ok and inv and inv.items and (inv.items[slot] or inv.items[tostring(slot)])
+    if not item then return false end
+    local amount = item.amount or item.count or 1
+    local okRemove, removed = pcall(function()
+        return exports['qb-inventory']:RemoveItem(playerId, item.name, amount, slot, 'p_bridge:setMetadata')
+    end)
+    if not okRemove or removed == false then return false end
+    local added, result = pcall(function()
+        return exports['qb-inventory']:AddItem(playerId, item.name, amount, slot, metadata, 'p_bridge:setMetadata')
+    end)
+    persistStash(playerId)
+    return added and result ~= false
 end
 
 ---@param event: string [hook name]

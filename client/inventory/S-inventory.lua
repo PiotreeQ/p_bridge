@@ -18,7 +18,10 @@ Bridge.Inventory.openInventory = function(invType, data)
     if invType == 'player' then
         TriggerEvent("SService:Server:SearchPlayer")
     elseif invType == 'stash' then
-        exports["S-Inventory"]:OpenStashInventory(nil, data)
+        -- OpenStashInventory(uniqueid, stashid): the bridge registers stashes with
+        -- the stash id as both, see server/inventory/S-inventory.lua
+        local stashId = type(data) == 'table' and (data.owner and ('%s_%s'):format(data.id, data.owner) or data.id) or data
+        exports["S-Inventory"]:OpenStashInventory(stashId, stashId)
     elseif invType == 'shop' then
         lib.print.error('S-Inventory does not support external shops, create shop in inventory config')
     end

@@ -3,7 +3,7 @@ game 'gta5'
 author 'pScripts [tebex.pscripts.store]'
 lua54 'yes'
 description 'pScripts - Official Bridge'
-version '1.3.8'
+version '1.4.0'
 
 client_scripts {
     'client/main.lua',
@@ -31,10 +31,12 @@ server_scripts {
     'server/logs.lua',
     'server/framework/*.lua',
     'server/vehicles/*.lua',
+    'server/inventory_utils.lua', -- shared helpers for the inventory adapters
     'server/inventory/*.lua',
     'server/dispatch/*.lua',
     'server/notify/*.lua',
-    'server/society/*.lua'
+    'server/society/*.lua',
+    'server/guard.lua' -- last: wraps the adapters' removeMoney / removeItem
 }
 
 shared_scripts {

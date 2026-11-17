@@ -22,7 +22,7 @@ end
 --@param items: table [name: string, count: number, metadata: table]
 --@param coords: vector3 [drop coordinates]
 Bridge.Inventory.CustomDrop = function(prefix, items, coords)
-    exports['tgiann-inventory']:CustomDrop(prefix, items, coords)
+    exports['tgiann-inventory']:CustomDrop(prefix, InvUtils.dropEntries(items), coords)
 end
 
 --@param playerId: number [existing player id]
@@ -40,7 +40,10 @@ end
 --@param itemMetadata: table [item metadata, optional]
 --@param itemSlot: number [item slot, optional]
 Bridge.Inventory.removeItem = function(playerId, itemName, itemCount, itemMetadata, itemSlot)
-    exports['tgiann-inventory']:RemoveItem(playerId, itemName, itemCount, itemSlot, itemMetadata)
+    local ok, result = pcall(function()
+        return exports['tgiann-inventory']:RemoveItem(playerId, itemName, itemCount, itemSlot, itemMetadata)
+    end)
+    return ok and result ~= false
 end
 
 --@param playerId: number [existing player id]
@@ -90,13 +93,65 @@ Bridge.Inventory.registerStash = function(stashId, label, slots, weight)
     while GetResourceState('tgiann-inventory') ~= 'started' do
         Citizen.Wait(100)
     end
-    exports['tgiann-inventory']:RegisterStash(stashId, label, slots, weight)
+    pcall(function()
+        exports['tgiann-inventory']:RegisterStash(stashId, label, slots, weight)
+    end)
+    -- RegisterStash does nothing for an existing stash: apply a new size explicitly
+    if tonumber(slots) then
+        pcall(function() exports['tgiann-inventory']:SetSlotCount(stashId, tonumber(slots)) end)
+    end
+    if tonumber(weight) then
+        pcall(function() exports['tgiann-inventory']:SetMaxWeight(stashId, tonumber(weight)) end)
+    end
+end
+
+--@param stashId: string [stash id]
+--@return items: table [{ name, count, metadata, slot }]
+Bridge.Inventory.getStashItems = function(stashId)
+    local ok, items = pcall(function()
+        return exports['tgiann-inventory']:GetSecondaryInventoryItems('stash', stashId)
+    end)
+    if not ok or type(items) ~= 'table' then
+        ok, items = pcall(function() return exports['tgiann-inventory']:GetInventoryItems(stashId) end)
+    end
+    return InvUtils.normalizeList(ok and type(items) == 'table' and items or nil)
+end
+
+--@return success: boolean
+Bridge.Inventory.addItemToStash = function(stashId, itemName, itemCount, itemMetadata)
+    local ok, result = pcall(function()
+        return exports['tgiann-inventory']:AddItemFromSecondInventory('stash', stashId, itemName, itemCount, nil, itemMetadata)
+    end)
+    return ok and result and true or false
+end
+
+--@return success: boolean
+Bridge.Inventory.removeItemFromStash = function(stashId, itemName, itemCount, itemMetadata, itemSlot)
+    local ok, result = pcall(function()
+        return exports['tgiann-inventory']:RemoveItemFromSecondInventory('stash', stashId, itemName, itemCount, itemSlot, itemMetadata)
+    end)
+    return ok and result and true or false
+end
+
+--@return canCarry: boolean
+Bridge.Inventory.canCarryItem = function(playerId, itemName, itemCount)
+    local ok, result = pcall(function()
+        return exports['tgiann-inventory']:CanCarryItem(playerId, itemName, itemCount or 1)
+    end)
+    if not ok then return true end
+    return result and true or false
 end
 
 ---@param playerId: number|string [player id or stash id]
 ---@param slot: number [slot index]
 ---@param metadata: table [new metadata to write to the slot]
 Bridge.Inventory.setMetadata = function(playerId, slot, metadata)
+    -- SetMetadata(inv, slot, metadata) takes players and stashes alike
+    local okSet = pcall(function()
+        exports['tgiann-inventory']:SetMetadata(playerId, slot, metadata or {})
+    end)
+    if okSet then return true end
+
     local itemData = exports["tgiann-inventory"]:GetItemBySlot(playerId, slot)
 
     if not itemData or not itemData.name then
@@ -173,9 +228,13 @@ RegisterNetEvent('p_bridge/inventory/openInventory', function(invType, data)
         -- the data table sends an object into the inventory NUI and crashes it
         -- (React error #31: "object with keys {id}").
         local stashId = data.owner and ('%s_%s'):format(data.id, data.owner) or data.id
+        local reg = Bridge.Inventory.getStashInfo and Bridge.Inventory.getStashInfo(stashId) or {}
+        local slots = math.max(tonumber(data.slots) or 0, reg.slots or 0)
+        local maxWeight = math.max(tonumber(data.maxWeight) or 0, reg.weight or 0)
+        local label = data.label or reg.label
         local invData = nil
-        if data.slots or data.maxWeight or data.label then
-            invData = { slots = data.slots, maxWeight = data.maxWeight, label = data.label }
+        if slots > 0 or maxWeight > 0 or label then
+            invData = { slots = slots > 0 and slots or nil, maxWeight = maxWeight > 0 and maxWeight or nil, label = label }
         end
         exports['tgiann-inventory']:OpenInventory(source, "stash", stashId, invData)
     elseif invType == 'player' then

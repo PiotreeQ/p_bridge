@@ -13,19 +13,41 @@ end
 Bridge.Inventory = {}
 
 RegisterNetEvent('p_bridge/inventory/openInventory', function(invType, data)
+    local _source = source
     if invType == 'shop' then
-        exports['jpr-inventory']:OpenShop(source, data.type)
+        exports['jpr-inventory']:OpenShop(_source, data.type)
     elseif invType == 'player' then
-        exports['jpr-inventory']:OpenInventoryById(source, data)
+        exports['jpr-inventory']:OpenInventoryById(_source, tonumber(type(data) == 'table' and data.id or data))
     else
-        exports['jpr-inventory']:OpenInventory(source, data)
+        -- OpenInventory(source, identifier, data): the id must be the stash
+        -- STRING, the size goes in the data table (qb-inventory rewrite API)
+        if type(data) ~= 'table' or not data.id then return end
+        local stashId = data.owner and ('%s_%s'):format(data.id, data.owner) or data.id
+        local reg = Bridge.Inventory.getStashInfo and Bridge.Inventory.getStashInfo(stashId) or {}
+        local slots = math.max(tonumber(data.slots) or 0, reg.slots or 0)
+        local maxWeight = math.max(tonumber(data.maxWeight) or 0, reg.weight or 0)
+        exports['jpr-inventory']:OpenInventory(_source, stashId, {
+            label = data.label or reg.label or stashId,
+            slots = slots > 0 and slots or nil,
+            maxweight = maxWeight > 0 and maxWeight or nil,
+        })
     end
 end)
 
 --@param playerId: number [existing player id]
 --@return items: table [{name: string, amount: number, metadata: table, slot: number}]
 Bridge.Inventory.getPlayerItems = function(playerId)
-    return exports["jpr-inventory"]:GetInventory(playerId)
+    -- jpr keeps player items on QBCore PlayerData (qb layout)
+    local Player = QBCore and QBCore.Functions.GetPlayer(tonumber(playerId))
+    if Player then
+        local out = {}
+        for _, item in pairs(Player.PlayerData.items or {}) do
+            if item and item.name then out[#out + 1] = item end
+        end
+        return out
+    end
+    local ok, items = pcall(function() return exports["jpr-inventory"]:GetInventory(playerId) end)
+    return ok and items or {}
 end
 
 --@param prefix: string [prefix for the drop]
@@ -50,7 +72,10 @@ end
 --@param itemMetadata: table [item metadata, optional]
 --@param itemSlot: number [item slot, optional]
 Bridge.Inventory.removeItem = function(playerId, itemName, itemCount, itemMetadata, itemSlot)
-    exports['jpr-inventory']:RemoveItem(playerId, itemName, itemCount, itemSlot)
+    local ok, result = pcall(function()
+        return exports['jpr-inventory']:RemoveItem(playerId, itemName, itemCount, itemSlot, 'p_bridge:removeItem')
+    end)
+    return ok and result ~= false
 end
 
 --@param playerId: number [existing player id]
@@ -109,7 +134,12 @@ end
 ---@param invId: number|string [player id]
 ---@return inventory: table|nil [{ items = { [slot] = { name, amount, info, slot } } }]
 Bridge.Inventory.getInventory = function(invId)
-    return { items = exports['jpr-inventory']:GetInventory(invId) }
+    if tonumber(invId) then
+        return { items = Bridge.Inventory.getPlayerItems(invId) }
+    end
+    local ok, inv = pcall(function() return exports['jpr-inventory']:GetInventory(invId) end)
+    if not ok or type(inv) ~= 'table' then return nil end
+    return inv.items and inv or { items = inv }
 end
 
 ---@param invId: number|string [player id]
@@ -132,17 +162,68 @@ end
 ---@param label: string [stash label]
 ---@param slots: number [number of slots]
 ---@param weight: number [max weight]
--- jpr-inventory creates stashes lazily when they are first opened, so nothing to
--- pre-register here; kept for interface parity with ox_inventory.
+-- jpr-inventory mirrors the qb-inventory rewrite API: CreateInventory puts a
+-- stash in memory so AddItem/RemoveItem/GetInventory reach it before anyone
+-- opened it. An existing stash is resized by OpenInventory's data table, which
+-- the open handler fills with the bigger of the caller's and registered size.
 Bridge.Inventory.registerStash = function(stashId, label, slots, weight)
-    return
+    if Bridge.Inventory.getInventory(stashId) then return end
+    InvUtils.call('jpr-inventory', 'CreateInventory', stashId, {
+        label = label or stashId,
+        slots = slots or 50,
+        maxweight = weight or 500000,
+    })
+end
+
+--@param stashId: string [stash id]
+--@return items: table [{ name, count, metadata, slot }]
+Bridge.Inventory.getStashItems = function(stashId)
+    local inv = Bridge.Inventory.getInventory(stashId)
+    return InvUtils.normalizeList(inv and inv.items or nil)
+end
+
+--@return success: boolean
+Bridge.Inventory.addItemToStash = function(stashId, itemName, itemCount, itemMetadata, stashSlots, stashMaxWeight)
+    if not Bridge.Inventory.getInventory(stashId) then
+        Bridge.Inventory.registerStash(stashId, stashId, stashSlots, stashMaxWeight)
+    end
+    local ok, result = pcall(function()
+        return exports['jpr-inventory']:AddItem(stashId, itemName, itemCount, false, itemMetadata or false, 'p_bridge:addItemToStash')
+    end)
+    return ok and result and true or false
+end
+
+--@return success: boolean
+Bridge.Inventory.removeItemFromStash = function(stashId, itemName, itemCount, itemMetadata, itemSlot)
+    -- RemoveItem ignores metadata, so remove slot by slot from the matching stacks
+    local plan = InvUtils.planRemoval(Bridge.Inventory.getStashItems(stashId), itemName, itemCount, itemMetadata, itemSlot)
+    if not plan then return false end
+    for _, step in ipairs(plan) do
+        local ok, result = pcall(function()
+            return exports['jpr-inventory']:RemoveItem(stashId, itemName, step.count, step.slot or false, 'p_bridge:removeItemFromStash')
+        end)
+        if not ok or result == false then return false end
+    end
+    return true
+end
+
+--@return canCarry: boolean
+Bridge.Inventory.canCarryItem = function(playerId, itemName, itemCount)
+    local ok, result = InvUtils.call('jpr-inventory', 'CanAddItem', playerId, itemName, itemCount or 1)
+    if not ok then return true end
+    return result and true or false
 end
 
 ---@param playerId: number|string [player id or stash id]
 ---@param slot: number [slot index]
 ---@param metadata: table [new metadata to write to the slot]
 Bridge.Inventory.setMetadata = function(playerId, slot, metadata)
-    lib.print.error('setMetadata is not supported in jpr-inventory, please change type in config')
+    if not tonumber(playerId) then
+        lib.print.error('setMetadata on a stash is not supported in jpr-inventory')
+        return false
+    end
+    -- jpr documents editing PlayerData.items + SetPlayerData for item info
+    return InvUtils.qbSetPlayerSlotInfo(playerId, slot, metadata or {})
 end
 
 ---@param event: string [hook name]

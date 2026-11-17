@@ -14,17 +14,10 @@ Bridge.Inventory = {}
 
 Bridge.Inventory.openInventory = function(invType, data)
     if invType == 'stash' then
-        if data.owner then
-            TriggerServerEvent("inventory:server:OpenInventory", "stash", data.id..'_'..data.owner, {
-                maxweight = 250000,
-                slots = 100,
-            })
-        else
-            TriggerServerEvent("inventory:server:OpenInventory", "stash", data, {
-                maxweight = 250000,
-                slots = 100,
-            })
-        end
+        -- documented codem stash open: (stashId, slots, weight, label); the id is
+        -- the same one GetStashItems / UpdateStash use on the server
+        local stashId, slots, maxWeight, label = Bridge.Utils.resolveStash(data)
+        TriggerServerEvent('codem-inventory:server:openstash', stashId, slots or 100, maxWeight or 250000, label or stashId)
     elseif invType == 'player' then
         TriggerEvent('codem-inventory:client:openplayerinventory', data)
     elseif invType == 'shop' then

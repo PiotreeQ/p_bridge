@@ -14,15 +14,14 @@ Bridge.Inventory = {}
 
 Bridge.Inventory.openInventory = function(invType, data)
     if invType == 'stash' then
-        if data.owner then
-            TriggerServerEvent("inventory:server:OpenInventory", "stash", data.id..'_'..data.owner, {
-                maxweight = 250000,
-                slots = 100,
-            })
-            TriggerEvent("inventory:client:SetCurrentStash", data.id..'_'..data.owner)
-        else
-            TriggerServerEvent('p_bridge/inventory/openInventory', invType, data)
-        end
+        -- legacy qb-style open: the stash id is the `stashitems` row the server
+        -- side (getStashItems / addItemToStash / removeItemFromStash) works on
+        local stashId, slots, maxWeight = Bridge.Utils.resolveStash(data)
+        TriggerServerEvent("inventory:server:OpenInventory", "stash", stashId, {
+            maxweight = maxWeight or 250000,
+            slots = slots or 100,
+        })
+        TriggerEvent("inventory:client:SetCurrentStash", stashId)
     elseif invType == 'shop' then
         TriggerServerEvent('p_bridge/inventory/openInventory', invType, data)
     elseif invType == 'player' then

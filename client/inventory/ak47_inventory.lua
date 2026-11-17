@@ -13,6 +13,19 @@ end
 Bridge.Inventory = {}
 
 Bridge.Inventory.openInventory = function(invType, data)
+    if invType == 'stash' and type(data) == 'table' then
+        -- documented custom stash open: { identifier, label, type, maxWeight, slots };
+        -- registers the stash when missing, same identifier the server exports use
+        local stashId, slots, maxWeight, label = Bridge.Utils.resolveStash(data)
+        exports['ak47_inventory']:OpenInventory({
+            identifier = stashId,
+            label = label or stashId,
+            type = 'stash',
+            maxWeight = maxWeight or 100000,
+            slots = slots or 50,
+        })
+        return
+    end
     exports['ak47_inventory']:OpenInventory(data)
 end
 

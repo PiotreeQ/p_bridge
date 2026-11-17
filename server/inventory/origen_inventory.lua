@@ -22,7 +22,11 @@ end
 --@param items: table [name: string, count: number, metadata: table]
 --@param coords: vector3 [drop coordinates]
 Bridge.Inventory.CustomDrop = function(prefix, items, coords)
-    lib.print.error('CustomDrop is not supported in origen_inventory, please change type in config')
+    -- ox-compatible builds expose CustomDrop; older ones have no server drop export
+    local ok = InvUtils.call('origen_inventory', { 'CustomDrop', 'customDrop' }, prefix, InvUtils.dropEntries(items), coords)
+    if not ok then
+        lib.print.error('CustomDrop is not supported in origen_inventory, please change type in config')
+    end
 end
 
 Bridge.Inventory.addItem = function(playerId, itemName, itemCount, itemMetadata, itemSlot)
@@ -30,7 +34,8 @@ Bridge.Inventory.addItem = function(playerId, itemName, itemCount, itemMetadata,
 end
 
 Bridge.Inventory.removeItem = function(playerId, itemName, itemCount, itemMetadata, itemSlot)
-    exports['origen_inventory']:removeItem(playerId, itemName, itemCount, itemMetadata, itemSlot)
+    local ok, result = InvUtils.call('origen_inventory', { 'removeItem', 'RemoveItem' }, playerId, itemName, itemCount, itemMetadata, itemSlot)
+    return ok and result ~= false
 end
 
 Bridge.Inventory.getItemCount = function(playerId, itemName, itemMetadata)
@@ -62,17 +67,48 @@ end
 ---@param label: string [stash label]
 ---@param slots: number [number of slots]
 ---@param weight: number [max weight]
--- origen_inventory creates stashes lazily when they are first opened, so nothing
--- to pre-register here; kept for interface parity with ox_inventory.
-Bridge.Inventory.registerStash = function(stashId, label, slots, weight)
-    return
+-- origen_inventory follows the ox_inventory API (lowercase names, ox signatures),
+-- so stashes are registered the ox way; re-registering updates the size like ox.
+-- Every call tries the lowercase name first, then the ox-cased alias.
+Bridge.Inventory.registerStash = function(stashId, label, slots, weight, owner, groups, coords)
+    while GetResourceState('origen_inventory') ~= 'started' do
+        Citizen.Wait(100)
+    end
+    InvUtils.call('origen_inventory', { 'registerStash', 'RegisterStash' }, stashId, label or stashId, slots or 50, weight or 100000, owner, groups, coords)
+end
+
+--@param stashId: string [stash id]
+--@return items: table [{ name, count, metadata, slot }]
+Bridge.Inventory.getStashItems = function(stashId)
+    local ok, items = InvUtils.call('origen_inventory', { 'getInventoryItems', 'GetInventoryItems' }, stashId)
+    return InvUtils.normalizeList(ok and items or nil)
+end
+
+--@return success: boolean
+Bridge.Inventory.addItemToStash = function(stashId, itemName, itemCount, itemMetadata)
+    local ok, result = InvUtils.call('origen_inventory', { 'addItem', 'AddItem' }, stashId, itemName, itemCount, itemMetadata)
+    return ok and result and true or false
+end
+
+--@return success: boolean
+Bridge.Inventory.removeItemFromStash = function(stashId, itemName, itemCount, itemMetadata, itemSlot)
+    local ok, result = InvUtils.call('origen_inventory', { 'removeItem', 'RemoveItem' }, stashId, itemName, itemCount, itemMetadata, itemSlot)
+    return ok and result ~= false
+end
+
+--@return canCarry: boolean
+Bridge.Inventory.canCarryItem = function(playerId, itemName, itemCount)
+    local ok, result = InvUtils.call('origen_inventory', { 'canCarryItem', 'CanCarryItem' }, playerId, itemName, itemCount or 1)
+    if not ok then return true end
+    return result and true or false
 end
 
 ---@param playerId: number|string [player id or stash id]
 ---@param slot: number [slot index]
 ---@param metadata: table [new metadata to write to the slot]
 Bridge.Inventory.setMetadata = function(playerId, slot, metadata)
-    lib.print.error('setMetadata is not supported in origen_inventory, please change type in config')
+    local ok = InvUtils.call('origen_inventory', { 'setMetadata', 'SetMetadata' }, playerId, slot, metadata or {})
+    return ok and true or false
 end
 
 ---@param invId: number|string [player id]
