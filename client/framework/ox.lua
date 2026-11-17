@@ -51,3 +51,35 @@ Bridge.Framework.getPlayerName = function()
     
     return ('%s %s'):format(player.firstname, player.lastname)
 end
+
+-- Money / job / status for HUDs and UIs. Same shapes in every framework file.
+
+--@return { cash: number, bank: number, dirty: number|nil }
+Bridge.Framework.getMoney = function()
+    local cash = GetResourceState('ox_inventory') == 'started' and exports.ox_inventory:Search('count', 'money') or 0
+    return { cash = cash or 0, bank = 0, dirty = nil } -- ox_core keeps bank accounts server side
+end
+
+--@return { name: string, label: string, grade: number, gradeLabel: string, salary: number, onDuty: boolean }
+Bridge.Framework.getJobInfo = function()
+    local job = Bridge.Framework.fetchPlayerJob()
+    return { name = job.name, label = job.label or job.name, grade = tonumber(job.grade) or 0, gradeLabel = '', salary = 0, onDuty = true }
+end
+
+--@return { [string]: number } [0 - 100 per status, e.g. hunger, thirst, stress]
+Bridge.Framework.getStatus = function()
+    return {}
+end
+
+RegisterNetEvent('ox:playerLogout', function()
+    Bridge.Framework.Loaded = false
+    TriggerEvent('p_bridge/client/playerUnloaded')
+end)
+
+
+-- Multicharacter: nothing to announce on this framework.
+--@param isNew: boolean [first spawn of a new character]
+Bridge.Framework.playerSpawned = function(isNew)
+end
+
+Bridge.Framework.name = 'ox'

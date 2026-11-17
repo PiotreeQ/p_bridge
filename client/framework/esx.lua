@@ -89,3 +89,78 @@ Bridge.Framework.CheckJobDuty = function()
 
     return playerJob.onDuty
 end
+
+-- Money / job / status for HUDs and UIs. Same shapes in every framework file.
+
+local function accountMoney(playerData, name)
+    for _, account in ipairs(playerData.accounts or {}) do
+        if account.name == name then
+            return account.money or 0
+        end
+    end
+    return 0
+end
+
+--@return { cash: number, bank: number, dirty: number|nil }
+Bridge.Framework.getMoney = function()
+    local playerData = getPlayerData()
+    return {
+        cash = accountMoney(playerData, 'money'),
+        bank = accountMoney(playerData, 'bank'),
+        dirty = accountMoney(playerData, 'black_money'),
+    }
+end
+
+--@return { name: string, label: string, grade: number, gradeLabel: string, salary: number, onDuty: boolean }
+Bridge.Framework.getJobInfo = function()
+    local job = Bridge.Framework.fetchPlayerJob()
+    return {
+        name = job.name,
+        label = job.label or job.name,
+        grade = tonumber(job.grade) or 0,
+        gradeLabel = job.grade_label or '',
+        salary = tonumber(job.grade_salary) or 0,
+        onDuty = Bridge.Framework.CheckJobDuty(),
+    }
+end
+
+-- esx_status keeps the needs; its tick reports them as percent.
+local statusValues = {}
+
+AddEventHandler('esx_status:onTick', function(data)
+    if type(data) ~= 'table' then return end
+    for i = 1, #data do
+        statusValues[data[i].name] = math.floor((data[i].percent or 0) + 0.5)
+    end
+    TriggerEvent('p_bridge/client/statusChanged', statusValues)
+end)
+
+--@return { [string]: number } [0 - 100 per status, e.g. hunger, thirst, stress]
+Bridge.Framework.getStatus = function()
+    return statusValues
+end
+
+RegisterNetEvent('esx:setAccountMoney', function()
+    -- es_extended updates its PlayerData in its own handler of the same event; read it a tick later.
+    SetTimeout(0, function()
+        TriggerEvent('p_bridge/client/moneyChanged', Bridge.Framework.getMoney())
+    end)
+end)
+
+RegisterNetEvent('esx:onPlayerLogout', function()
+    TriggerEvent('p_bridge/client/playerUnloaded')
+end)
+
+
+-- Multicharacter: es_extended in multichar mode leaves spawning to the character resource,
+-- which calls this once the player stands in the world (what ESX.SpawnPlayer would trigger).
+--@param isNew: boolean [first spawn of a new character]
+Bridge.Framework.playerSpawned = function(isNew)
+    TriggerEvent('playerSpawned', GetEntityCoords(PlayerPedId()))
+    TriggerEvent('esx:onPlayerSpawn')
+    TriggerEvent('esx:restoreLoadout')
+    TriggerServerEvent('esx:onPlayerSpawn')
+    TriggerEvent('esx:loadingScreenOff')
+end
+
+Bridge.Framework.name = 'esx'

@@ -5,9 +5,11 @@ Bridge.Logs = {}
 Bridge.Logs.Send = function(playerId, title, message, webhook)
     Citizen.CreateThread(function()
         if not Config.Logs then return end
-        if not message or not webhook then 
-            lib.print.error(('No message or webhook provided for logging [%s]'):format(GetInvokingResource() or cache.resource))
-            return 
+        -- An empty webhook just means this log is disabled
+        if not webhook or webhook == '' then return end
+        if not message then
+            lib.print.error(('No message provided for logging [%s]'):format(GetInvokingResource() or cache.resource))
+            return
         end
         local steamName, steamHex, discordId, license = 'Unknown', 'Unknown', 'Unknown', Bridge.Framework.getUniqueId(playerId) or 'Unknown'
         if playerId then
@@ -36,7 +38,12 @@ Bridge.Logs.Send = function(playerId, title, message, webhook)
                 ['icon_url'] = "https://r2.fivemanage.com/xlufCGKYLtGfU8IBmjOL9/LOGO3.png"
             }
         } }
-        PerformHttpRequest(webhook, nil, 'POST', json.encode({
+        -- A rejected or unreachable webhook used to fail without a trace
+        PerformHttpRequest(webhook, function(status, body)
+            if status < 200 or status >= 300 then
+                lib.print.error(('Discord webhook failed for log "%s": HTTP %s %s'):format(title or 'unknown', status, tostring(body or ''):sub(1, 200)))
+            end
+        end, 'POST', json.encode({
             username = 'pScripts',
             embeds = embedData
         }), {

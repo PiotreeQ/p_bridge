@@ -94,3 +94,54 @@ Bridge.Framework.CheckJobDuty = function()
     local onDuty = exports['qbx_core']:GetPlayerData()?.job?.onduty
     return onDuty == true
 end
+
+-- Money / job / status for HUDs and UIs. Same shapes in every framework file.
+
+--@return { cash: number, bank: number, dirty: number|nil }
+Bridge.Framework.getMoney = function()
+    local money = exports['qbx_core']:GetPlayerData()?.money or {}
+    return { cash = money.cash or 0, bank = money.bank or 0, dirty = nil } -- dirty money is an item in QBox
+end
+
+--@return { name: string, label: string, grade: number, gradeLabel: string, salary: number, onDuty: boolean }
+Bridge.Framework.getJobInfo = function()
+    local job = exports['qbx_core']:GetPlayerData()?.job or {}
+    return {
+        name = job.name or 'unemployed',
+        label = job.label or job.name or 'Unemployed',
+        grade = tonumber(job.grade?.level) or 0,
+        gradeLabel = job.grade?.name or '',
+        salary = tonumber(job.payment) or 0,
+        onDuty = Bridge.Framework.CheckJobDuty(),
+    }
+end
+
+--@return { [string]: number } [0 - 100 per status, e.g. hunger, thirst, stress]
+Bridge.Framework.getStatus = function()
+    local meta = exports['qbx_core']:GetPlayerData()?.metadata or {}
+    return { hunger = meta.hunger, thirst = meta.thirst, stress = meta.stress }
+end
+
+-- Money and needs live in PlayerData, so every PlayerData update may have changed them.
+RegisterNetEvent('QBCore:Player:SetPlayerData', function(playerData)
+    if type(playerData) ~= 'table' then return end
+    TriggerEvent('p_bridge/client/moneyChanged', Bridge.Framework.getMoney())
+    TriggerEvent('p_bridge/client/statusChanged', Bridge.Framework.getStatus())
+end)
+
+RegisterNetEvent('qbx_core:client:playerLoggedOut', function()
+    TriggerEvent('p_bridge/client/playerUnloaded')
+end)
+
+
+-- Multicharacter: QB / QBox expect the spawn resource (qb-spawn, apartments) to announce the
+-- loaded player once it stands in the world; the character resource calls this instead.
+--@param isNew: boolean [first spawn of a new character]
+Bridge.Framework.playerSpawned = function(isNew)
+    TriggerServerEvent('QBCore:Server:OnPlayerLoaded')
+    TriggerEvent('QBCore:Client:OnPlayerLoaded')
+    TriggerServerEvent('qb-houses:server:SetInsideMeta', 0, false)
+    TriggerServerEvent('qb-apartments:server:SetInsideMeta', 0, 0, false)
+end
+
+Bridge.Framework.name = 'qbox'

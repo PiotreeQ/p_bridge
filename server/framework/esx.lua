@@ -106,6 +106,12 @@ Bridge.Framework.getJobs = function()
     return jobsData
 end
 
+--@param playerId: number [player id]
+--@return boolean [has a loaded character; no error log when not, e.g. still on the loading screen]
+Bridge.Framework.isPlayerLoaded = function(playerId)
+    return playerId ~= nil and ESX.GetPlayerFromId(playerId) ~= nil
+end
+
 --@param playerId: number [existing player id]
 --@return xPlayer: table [player object]
 Bridge.Framework.getPlayerById = function(playerId)
@@ -492,3 +498,180 @@ lib.callback.register('p_bridge/server/framework/checkPermissions', Bridge.Frame
 Bridge.Framework.registerItem = function(itemName, itemFunction)
     ESX.RegisterUsableItem(itemName, itemFunction)
 end
+
+--@param playerId: number|string [existing player id or unique identifier]
+--@return licenses: { name: string, label: string }[] [every license the player holds]
+Bridge.Framework.getPlayerLicenses = function(playerId)
+    local xPlayer = type(playerId) == 'number' and ESX.GetPlayerFromId(playerId) or ESX.GetPlayerFromIdentifier(playerId)
+    if not xPlayer then return {} end
+
+    local rows = MySQL.query.await([[
+        SELECT ul.type AS name, COALESCE(l.label, ul.type) AS label
+        FROM user_licenses ul LEFT JOIN licenses l ON l.type = ul.type
+        WHERE ul.owner = ?
+    ]], { xPlayer.identifier }) or {}
+    return rows
+end
+
+
+-- Characters (multicharacter). ESX keeps every character as its own `users` row whose identifier
+-- is '<prefix><slot>:<license>' (es_extended in multichar mode); creating and loading both go
+-- through esx:onPlayerJoined like esx_multicharacter does.
+
+local CHAR_PREFIX = 'char'
+local DATE_FORMAT = 'DD/MM/YYYY' -- users.dateofbirth, as esx_identity writes it
+
+local function charLicense(playerId)
+    local ok, license = pcall(ESX.GetIdentifier, playerId)
+    return ok and license or nil
+end
+
+local function ownsCharacter(playerId, charId)
+    local license = charLicense(playerId)
+    return type(charId) == 'string' and license ~= nil
+        and charId:match(('^%s%%d+:(.+)$'):format(CHAR_PREFIX)) == license
+end
+
+-- 'DD/MM/YYYY' | 'MM/DD/YYYY' | 'YYYY-MM-DD' -> 'YYYY-MM-DD'
+local function isoDate(value)
+    if type(value) ~= 'string' then return nil end
+    local y, m, d = value:match('^(%d%d%d%d)-(%d%d?)-(%d%d?)')
+    if y then return ('%04d-%02d-%02d'):format(y, m, d) end
+    local a, b, year = value:match('^(%d%d?)[/.-](%d%d?)[/.-](%d%d%d%d)')
+    if not a then return nil end
+    local day, month = tonumber(a), tonumber(b)
+    if DATE_FORMAT:sub(1, 2) == 'MM' or month > 12 then day, month = month, day end
+    return ('%04d-%02d-%02d'):format(year, month, day)
+end
+
+local function esxDate(iso)
+    local y, m, d = tostring(iso):match('^(%d%d%d%d)-(%d%d)-(%d%d)$')
+    if not y then return iso end
+    return (DATE_FORMAT:gsub('DD', d):gsub('MM', m):gsub('YYYY', y))
+end
+
+local function waitForPlayer(playerId, loaded, timeout)
+    local deadline = GetGameTimer() + (timeout or 15000)
+    while (ESX.GetPlayerFromId(playerId) ~= nil) ~= loaded do
+        if GetGameTimer() > deadline then return false end
+        Wait(50)
+    end
+    return true
+end
+
+--@param playerId: number [player server id]
+--@return characters: { id: string, slot: number, firstName: string, lastName: string, dob: string|nil, gender: 'male'|'female', job: { label: string, grade: string }, cash: number, bank: number, stateId: string|nil, playtime: number|nil, lastPlayed: number|nil, disabled: boolean }[]
+Bridge.Framework.getCharacters = function(playerId)
+    local license = charLicense(playerId)
+    if not license then return {} end
+
+    local rows = MySQL.query.await('SELECT * FROM `users` WHERE `identifier` LIKE ?', { ('%s%%:%s'):format(CHAR_PREFIX, license) }) or {}
+    local jobs = ESX.GetJobs() or {}
+    local characters = {}
+    for _, row in ipairs(rows) do
+        local slot = tonumber(row.identifier:match(('^%s(%%d+):'):format(CHAR_PREFIX)))
+        if slot and row.identifier:sub(-#license) == license then
+            local accounts = row.accounts and json.decode(row.accounts) or {}
+            local metadata = row.metadata and json.decode(row.metadata) or {}
+            local job, grade = jobs[row.job], nil
+            if job and job.grades then grade = job.grades[tostring(row.job_grade)] end
+            characters[#characters + 1] = {
+                id = row.identifier,
+                slot = slot,
+                firstName = row.firstname or '',
+                lastName = row.lastname or '',
+                dob = isoDate(row.dateofbirth),
+                gender = (row.sex == 'f' or row.sex == 'F') and 'female' or 'male',
+                job = {
+                    label = job and job.label or row.job or 'Unemployed',
+                    grade = (grade and row.job ~= 'unemployed') and grade.label or '',
+                },
+                cash = accounts.money or 0,
+                bank = accounts.bank or 0,
+                stateId = row.ssn,
+                playtime = metadata.lastPlaytime and math.floor(metadata.lastPlaytime / 60) or nil,
+                lastPlayed = row.last_seen or row.updated_at or nil,
+                disabled = row.disabled == true or row.disabled == 1 or row.disabled == '1',
+            }
+        end
+    end
+    table.sort(characters, function(a, b) return a.slot < b.slot end)
+    return characters
+end
+
+--@param playerId: number [player server id]
+--@param charId: string [unique id from getCharacters]
+--@return boolean [true once the character is loaded]
+Bridge.Framework.loginCharacter = function(playerId, charId)
+    if not ownsCharacter(playerId, charId) or ESX.GetPlayerFromId(playerId) then return false end
+    if ESX.GetPlayerFromIdentifier(charId) then return false end -- same character online twice
+    TriggerEvent('esx:onPlayerJoined', playerId, charId:match('^([^:]+):'))
+    return waitForPlayer(playerId, true)
+end
+
+--@param playerId: number [player server id]
+--@param slot: number [character slot]
+--@param data: { firstName: string, lastName: string, dob: string, gender: 'male'|'female', height: number|nil, nationality: string|nil, backstory: string|nil }
+--@return charId: string|nil [unique id of the new, loaded character]
+Bridge.Framework.createCharacter = function(playerId, slot, data)
+    local license = charLicense(playerId)
+    slot = tonumber(slot)
+    if not license or not slot or ESX.GetPlayerFromId(playerId) then return nil end
+    local charId = ('%s%d:%s'):format(CHAR_PREFIX, slot, license)
+    if MySQL.scalar.await('SELECT 1 FROM `users` WHERE `identifier` = ?', { charId }) then return nil end
+
+    TriggerEvent('esx:onPlayerJoined', playerId, ('%s%d'):format(CHAR_PREFIX, slot), {
+        firstname = data.firstName,
+        lastname = data.lastName,
+        dateofbirth = esxDate(data.dob),
+        sex = data.gender == 'female' and 'f' or 'm',
+        height = tonumber(data.height) or 175,
+    })
+    return waitForPlayer(playerId, true) and charId or nil
+end
+
+local charTables = nil
+
+-- Every table with an `identifier` / `owner` text column holds character data; deleting a
+-- character clears them all, like esx_multicharacter does.
+local function characterTables()
+    if charTables then return charTables end
+    charTables = {}
+    local rows = MySQL.query.await([[
+        SELECT TABLE_NAME, COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+        WHERE TABLE_SCHEMA = DATABASE() AND DATA_TYPE = 'varchar' AND COLUMN_NAME IN ('identifier', 'owner')
+    ]]) or {}
+    for _, row in ipairs(rows) do charTables[#charTables + 1] = { table = row.TABLE_NAME, column = row.COLUMN_NAME } end
+    return charTables
+end
+
+--@param playerId: number [player server id]
+--@param charId: string [unique id from getCharacters]
+--@return boolean [true if the character and its data were deleted]
+Bridge.Framework.deleteCharacter = function(playerId, charId)
+    if not ownsCharacter(playerId, charId) or ESX.GetPlayerFromIdentifier(charId) then return false end
+    local queries = {}
+    for _, entry in ipairs(characterTables()) do
+        queries[#queries + 1] = { query = ('DELETE FROM `%s` WHERE `%s` = ?'):format(entry.table, entry.column), values = { charId } }
+    end
+    return MySQL.transaction.await(queries) and true or false
+end
+
+--@param playerId: number [player server id]
+--@return boolean [true once the character is saved and unloaded]
+Bridge.Framework.logoutCharacter = function(playerId)
+    if not ESX.GetPlayerFromId(playerId) then return true end
+    TriggerEvent('esx:playerLogout', playerId)
+    return waitForPlayer(playerId, false)
+end
+
+--@param playerId: number [player server id]
+--@return position: { x: number, y: number, z: number, w: number }|nil [where the loaded character was last saved]
+Bridge.Framework.getLastPosition = function(playerId)
+    local xPlayer = ESX.GetPlayerFromId(playerId)
+    local coords = xPlayer and xPlayer.coords
+    if type(coords) ~= 'table' or not coords.x then return nil end
+    return { x = coords.x, y = coords.y, z = coords.z, w = coords.heading or coords.w or 0.0 }
+end
+
+Bridge.Framework.name = 'esx'

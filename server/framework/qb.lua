@@ -130,6 +130,12 @@ Bridge.Framework.getJobs = function()
     return jobsData
 end
 
+--@param playerId: number [player id]
+--@return boolean [has a loaded character; no error log when not, e.g. still on the loading screen]
+Bridge.Framework.isPlayerLoaded = function(playerId)
+    return playerId ~= nil and QBCore.Functions.GetPlayer(playerId) ~= nil
+end
+
 --@param playerId: number [existing player id]
 --@return xPlayer: table [player object]
 Bridge.Framework.getPlayerById = function(playerId)
@@ -523,3 +529,133 @@ Bridge.Framework.getForensics = function(playerId)
         bloodType = meta.bloodtype,
     }
 end
+
+--@param playerId: number|string [existing player id or unique identifier]
+--@return licenses: { name: string, label: string }[] [every license the player holds]
+Bridge.Framework.getPlayerLicenses = function(playerId)
+    local xPlayer = type(playerId) == 'number' and QBCore.Functions.GetPlayer(playerId) or QBCore.Functions.GetPlayerByCitizenId(playerId)
+    if not xPlayer then return {} end
+
+    local licenses = {}
+    for name, owned in pairs(xPlayer.PlayerData.metadata.licences or {}) do
+        if owned then
+            licenses[#licenses + 1] = { name = name, label = name:gsub('^%l', string.upper) }
+        end
+    end
+    return licenses
+end
+
+
+-- Characters (multicharacter). QBCore keeps characters in `players` by Rockstar license; the
+-- slot is `cid`, the unique id the citizenid. Login with newData creates the character.
+
+local function decode(value)
+    if type(value) ~= 'string' then return value or {} end
+    local ok, result = pcall(json.decode, value)
+    return ok and result or {}
+end
+
+local function isoDate(value)
+    if type(value) ~= 'string' then return nil end
+    local y, m, d = value:match('^(%d%d%d%d)-(%d%d?)-(%d%d?)')
+    if y then return ('%04d-%02d-%02d'):format(y, m, d) end
+    local a, b, year = value:match('^(%d%d?)[/.-](%d%d?)[/.-](%d%d%d%d)')
+    if not a then return nil end
+    local day, month = tonumber(a), tonumber(b)
+    if month > 12 then day, month = month, day end
+    return ('%04d-%02d-%02d'):format(year, month, day)
+end
+
+local function qbLicense(playerId)
+    return QBCore.Functions.GetIdentifier(playerId, 'license')
+end
+
+--@param playerId: number [player server id]
+--@return characters: { id: string, slot: number, firstName: string, lastName: string, dob: string|nil, gender: 'male'|'female', job: { label: string, grade: string }, cash: number, bank: number, stateId: string|nil, playtime: number|nil, lastPlayed: number|nil, disabled: boolean }[]
+Bridge.Framework.getCharacters = function(playerId)
+    local license = qbLicense(playerId)
+    if not license then return {} end
+    local rows = MySQL.query.await('SELECT * FROM `players` WHERE `license` = ? ORDER BY `cid`', { license }) or {}
+    local characters = {}
+    for _, row in ipairs(rows) do
+        local charinfo, money, job = decode(row.charinfo), decode(row.money), decode(row.job)
+        characters[#characters + 1] = {
+            id = row.citizenid,
+            slot = tonumber(row.cid) or #characters + 1,
+            firstName = charinfo.firstname or '',
+            lastName = charinfo.lastname or '',
+            dob = isoDate(charinfo.birthdate),
+            gender = tonumber(charinfo.gender) == 1 and 'female' or 'male',
+            job = {
+                label = job.label or job.name or 'Unemployed',
+                grade = (job.name ~= 'unemployed' and type(job.grade) == 'table') and (job.grade.name or '') or '',
+            },
+            cash = money.cash or 0,
+            bank = money.bank or 0,
+            stateId = row.citizenid,
+            lastPlayed = row.last_updated,
+            disabled = false,
+        }
+    end
+    return characters
+end
+
+--@param playerId: number [player server id]
+--@param charId: string [citizenid]
+--@return boolean [true once the character is loaded]
+Bridge.Framework.loginCharacter = function(playerId, charId)
+    if QBCore.Functions.GetPlayer(playerId) then return false end
+    local owner = MySQL.scalar.await('SELECT `license` FROM `players` WHERE `citizenid` = ?', { charId })
+    if not owner or owner ~= qbLicense(playerId) then return false end
+    return QBCore.Player.Login(playerId, charId) == true
+end
+
+--@param playerId: number [player server id]
+--@param slot: number [character slot (cid)]
+--@param data: { firstName: string, lastName: string, dob: string, gender: 'male'|'female', height: number|nil, nationality: string|nil, backstory: string|nil }
+--@return charId: string|nil [citizenid of the new, loaded character]
+Bridge.Framework.createCharacter = function(playerId, slot, data)
+    if QBCore.Functions.GetPlayer(playerId) then return nil end
+    local ok = QBCore.Player.Login(playerId, false, {
+        cid = tonumber(slot),
+        charinfo = {
+            firstname = data.firstName,
+            lastname = data.lastName,
+            birthdate = data.dob,
+            gender = data.gender == 'female' and 1 or 0,
+            nationality = data.nationality or 'American',
+            backstory = data.backstory,
+            cid = tonumber(slot),
+        },
+    })
+    local player = ok and QBCore.Functions.GetPlayer(playerId)
+    return player and player.PlayerData.citizenid or nil
+end
+
+--@param playerId: number [player server id]
+--@param charId: string [citizenid]
+--@return boolean [true if the character was deleted]
+Bridge.Framework.deleteCharacter = function(playerId, charId)
+    local owner = MySQL.scalar.await('SELECT `license` FROM `players` WHERE `citizenid` = ?', { charId })
+    if not owner or owner ~= qbLicense(playerId) then return false end
+    QBCore.Player.DeleteCharacter(playerId, charId)
+    return true
+end
+
+--@param playerId: number [player server id]
+--@return boolean [true once the character is saved and unloaded]
+Bridge.Framework.logoutCharacter = function(playerId)
+    if QBCore.Functions.GetPlayer(playerId) then QBCore.Player.Logout(playerId) end
+    return true
+end
+
+--@param playerId: number [player server id]
+--@return position: { x: number, y: number, z: number, w: number }|nil [where the loaded character was last saved]
+Bridge.Framework.getLastPosition = function(playerId)
+    local player = QBCore.Functions.GetPlayer(playerId)
+    local pos = player and player.PlayerData.position
+    if not pos or not pos.x then return nil end
+    return { x = pos.x, y = pos.y, z = pos.z, w = pos.w or pos.heading or 0.0 }
+end
+
+Bridge.Framework.name = 'qb'

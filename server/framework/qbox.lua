@@ -28,25 +28,29 @@ Bridge.Framework.SetOfflineJob = function(uniqueId, jobName, jobGrade)
         return false
     end
 
-    local jobsData = exports['qbx_core']:GetJobs()
-    row.job = json.decode(row.job)
-    local newJob = {
-        name = jobName,
-        label = jobsData[jobName]?.label or 'Unknown',
-        onduty = row.job.onduty or false,
-        type = jobsData[jobName]?.type or 'none',
-        grade = {
-            name = jobsData[jobName]?.grades[tostring(jobGrade)]?.name or 'No Grades',
-            level = jobGrade,
-            payment = jobsData[jobName]?.grades[tostring(jobGrade)]?.payment or 0,
-            isboss = jobsData[jobName]?.grades[tostring(jobGrade)]?.isboss or false
-        }
-    }
-    local result = MySQL.update.await('UPDATE players SET job = ? WHERE citizenid = ?', {
-        json.encode(newJob),
-        uniqueId
-    })
-    return result > 0
+    jobGrade = tonumber(jobGrade) or 0
+    local currentJob = json.decode(row.job or '{}') or {}
+
+    -- qbx_core keeps jobs in player_groups and rebuilds players.job from it, so a raw UPDATE on players.job
+    -- doesn't stick; its exports accept offline citizenids and keep both in sync
+    local ok, err = pcall(function()
+        if jobName == 'unemployed' then
+            if currentJob.name and currentJob.name ~= 'unemployed' then
+                exports['qbx_core']:RemovePlayerFromJob(uniqueId, currentJob.name)
+            end
+            return
+        end
+
+        exports['qbx_core']:AddPlayerToJob(uniqueId, jobName, jobGrade)
+        exports['qbx_core']:SetPlayerPrimaryJob(uniqueId, jobName)
+    end)
+
+    if not ok then
+        lib.print.error(('SetOfflineJob failed for %s (%s %s): %s'):format(uniqueId, jobName, jobGrade, err))
+        return false
+    end
+
+    return true
 end
 
 Bridge.Framework.SetJob = function(playerId, jobName, jobGrade)
@@ -127,6 +131,12 @@ Bridge.Framework.getJobs = function()
         end
     end
     return jobsData
+end
+
+--@param playerId: number [player id]
+--@return boolean [has a loaded character; no error log when not, e.g. still on the loading screen]
+Bridge.Framework.isPlayerLoaded = function(playerId)
+    return playerId ~= nil and exports['qbx_core']:GetPlayer(playerId) ~= nil
 end
 
 --@param playerId: number [existing player id]
@@ -528,3 +538,137 @@ Bridge.Framework.getForensics = function(playerId)
         bloodType = meta.bloodtype,
     }
 end
+
+--@param playerId: number|string [existing player id or unique identifier]
+--@return licenses: { name: string, label: string }[] [every license the player holds]
+Bridge.Framework.getPlayerLicenses = function(playerId)
+    local xPlayer = type(playerId) == 'number' and exports['qbx_core']:GetPlayer(playerId) or exports['qbx_core']:GetPlayerByCitizenId(playerId)
+    if not xPlayer then return {} end
+
+    local licenses = {}
+    for name, owned in pairs(xPlayer.PlayerData.metadata.licences or {}) do
+        if owned then
+            licenses[#licenses + 1] = { name = name, label = name:gsub('^%l', string.upper) }
+        end
+    end
+    return licenses
+end
+
+
+-- Characters (multicharacter). QBox keeps characters in `players` by license2 / license; the
+-- slot is charinfo.cid, the unique id the citizenid. Set `characters.useExternalCharacters = true`
+-- in qbx_core/config/client.lua so its own selection stays off.
+
+local function decode(value)
+    if type(value) ~= 'string' then return value or {} end
+    local ok, result = pcall(json.decode, value)
+    return ok and result or {}
+end
+
+local function isoDate(value)
+    if type(value) ~= 'string' then return nil end
+    local y, m, d = value:match('^(%d%d%d%d)-(%d%d?)-(%d%d?)')
+    if y then return ('%04d-%02d-%02d'):format(y, m, d) end
+    local a, b, year = value:match('^(%d%d?)[/.-](%d%d?)[/.-](%d%d%d%d)')
+    if not a then return nil end
+    local day, month = tonumber(a), tonumber(b)
+    if month > 12 then day, month = month, day end
+    return ('%04d-%02d-%02d'):format(year, month, day)
+end
+
+local function licenses(playerId)
+    return GetPlayerIdentifierByType(playerId, 'license2'), GetPlayerIdentifierByType(playerId, 'license')
+end
+
+local function ownsCharacter(playerId, charId)
+    local owner = MySQL.scalar.await('SELECT `license` FROM `players` WHERE `citizenid` = ?', { charId })
+    local license2, license = licenses(playerId)
+    return owner ~= nil and (owner == license2 or owner == license)
+end
+
+--@param playerId: number [player server id]
+--@return characters: { id: string, slot: number, firstName: string, lastName: string, dob: string|nil, gender: 'male'|'female', job: { label: string, grade: string }, cash: number, bank: number, stateId: string|nil, playtime: number|nil, lastPlayed: number|nil, disabled: boolean }[]
+Bridge.Framework.getCharacters = function(playerId)
+    local license2, license = licenses(playerId)
+    if not license2 and not license then return {} end
+    local rows = MySQL.query.await('SELECT * FROM `players` WHERE `license` = ? OR `license` = ?', { license2 or '', license or '' }) or {}
+    local characters = {}
+    for _, row in ipairs(rows) do
+        local charinfo, money, job = decode(row.charinfo), decode(row.money), decode(row.job)
+        characters[#characters + 1] = {
+            id = row.citizenid,
+            slot = tonumber(charinfo.cid) or tonumber(row.cid) or #characters + 1,
+            firstName = charinfo.firstname or '',
+            lastName = charinfo.lastname or '',
+            dob = isoDate(charinfo.birthdate),
+            gender = tonumber(charinfo.gender) == 1 and 'female' or 'male',
+            job = {
+                label = job.label or job.name or 'Unemployed',
+                grade = (job.name ~= 'unemployed' and type(job.grade) == 'table') and (job.grade.name or '') or '',
+            },
+            cash = money.cash or 0,
+            bank = money.bank or 0,
+            stateId = row.citizenid,
+            lastPlayed = row.last_updated,
+            disabled = false,
+        }
+    end
+    table.sort(characters, function(a, b) return a.slot < b.slot end)
+    return characters
+end
+
+--@param playerId: number [player server id]
+--@param charId: string [citizenid]
+--@return boolean [true once the character is loaded]
+Bridge.Framework.loginCharacter = function(playerId, charId)
+    if exports['qbx_core']:GetPlayer(playerId) or not ownsCharacter(playerId, charId) then return false end
+    return exports['qbx_core']:Login(playerId, charId) == true
+end
+
+--@param playerId: number [player server id]
+--@param slot: number [character slot (charinfo.cid)]
+--@param data: { firstName: string, lastName: string, dob: string, gender: 'male'|'female', height: number|nil, nationality: string|nil, backstory: string|nil }
+--@return charId: string|nil [citizenid of the new, loaded character]
+Bridge.Framework.createCharacter = function(playerId, slot, data)
+    if exports['qbx_core']:GetPlayer(playerId) then return nil end
+    local ok = exports['qbx_core']:Login(playerId, nil, {
+        charinfo = {
+            firstname = data.firstName,
+            lastname = data.lastName,
+            birthdate = data.dob,
+            gender = data.gender == 'female' and 1 or 0,
+            nationality = data.nationality or 'American',
+            backstory = data.backstory or 'placeholder backstory',
+            cid = tonumber(slot),
+        },
+    })
+    local player = ok and exports['qbx_core']:GetPlayer(playerId)
+    return player and player.PlayerData.citizenid or nil
+end
+
+--@param playerId: number [player server id]
+--@param charId: string [citizenid]
+--@return boolean [true if the character was deleted]
+Bridge.Framework.deleteCharacter = function(playerId, charId)
+    if not ownsCharacter(playerId, charId) then return false end
+    exports['qbx_core']:DeleteCharacter(charId)
+    return true
+end
+
+--@param playerId: number [player server id]
+--@return boolean [true once the character is saved and unloaded]
+Bridge.Framework.logoutCharacter = function(playerId)
+    if exports['qbx_core']:GetPlayer(playerId) then exports['qbx_core']:Logout(playerId) end
+    return true
+end
+
+--@param playerId: number [player server id]
+--@return position: { x: number, y: number, z: number, w: number }|nil [where the loaded character was last saved]
+Bridge.Framework.getLastPosition = function(playerId)
+    local player = exports['qbx_core']:GetPlayer(playerId)
+    local pos = player and player.PlayerData.position
+    if not pos or not pos.x then return nil end
+    return { x = pos.x, y = pos.y, z = pos.z, w = pos.w or pos.heading or 0.0 }
+end
+
+Bridge.Framework.name = 'qbox'

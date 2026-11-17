@@ -87,13 +87,16 @@ end
 ---@param label: string [stash label]
 ---@param slots: number [number of slots]
 ---@param weight: number [max weight]
-Bridge.Inventory.registerStash = function(stashId, label, slots, weight)
+---@param owner: boolean | string | nil [true = every player has his own stash, string = stash of one owner]
+---@param groups: table | nil [{jobName = minGrade}, only these jobs can open it]
+---@param coords: vector3 | vector3[] | nil [the stash can be opened only near these coords]
+Bridge.Inventory.registerStash = function(stashId, label, slots, weight, owner, groups, coords)
     while GetResourceState('ox_inventory') ~= 'started' do
         Citizen.Wait(100)
     end
 
     Citizen.Wait(100)
-    exports['ox_inventory']:RegisterStash(stashId, label, slots, weight)
+    exports['ox_inventory']:RegisterStash(stashId, label, slots, weight, owner, groups, coords)
 end
 
 ---@param playerId: number|string [player id or stash/inventory id]

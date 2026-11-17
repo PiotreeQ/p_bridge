@@ -24,6 +24,12 @@ Bridge.Framework.frameworkUniqueId = function()
     return Config.FrameworkUniqueId['ox']
 end
 
+--@param playerId: number [player id]
+--@return boolean [has a loaded character; no error log when not, e.g. still on the loading screen]
+Bridge.Framework.isPlayerLoaded = function(playerId)
+    return playerId ~= nil and Ox.GetPlayerFromFilter({ source = playerId }) ~= nil
+end
+
 --@param playerId: number [existing player id]
 --@return xPlayer: table [player object]
 Bridge.Framework.getPlayerById = function(playerId)
@@ -328,3 +334,47 @@ end
 
 lib.callback.register('p_bridge/server/framework/checkPermissions', Bridge.Framework.checkPermissions)
 
+
+
+--@param playerId: number|string [existing player id or unique identifier]
+--@return licenses: { name: string, label: string }[] [every license the player holds]
+Bridge.Framework.getPlayerLicenses = function(playerId)
+    return {}
+end
+
+
+-- Characters (multicharacter): this framework manages its own characters; p_charactersystem's
+-- multicharacter is not supported here, these keep callers safe.
+
+--@param playerId: number [player server id]
+--@return characters: table[] [always empty]
+Bridge.Framework.getCharacters = function(playerId)
+    return {}
+end
+
+--@return boolean [always false]
+Bridge.Framework.loginCharacter = function(playerId, charId)
+    return false
+end
+
+--@return charId: nil
+Bridge.Framework.createCharacter = function(playerId, slot, data)
+    return nil
+end
+
+--@return boolean [always false]
+Bridge.Framework.deleteCharacter = function(playerId, charId)
+    return false
+end
+
+--@return boolean [always true]
+Bridge.Framework.logoutCharacter = function(playerId)
+    return true
+end
+
+--@return position: nil
+Bridge.Framework.getLastPosition = function(playerId)
+    return nil
+end
+
+Bridge.Framework.name = 'ox'

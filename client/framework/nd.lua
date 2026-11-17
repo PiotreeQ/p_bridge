@@ -45,3 +45,42 @@ Bridge.Framework.getPlayerName = function()
     
     return ('%s %s'):format(player.firstname, player.lastname)
 end
+
+-- Money / job / status for HUDs and UIs. Same shapes in every framework file.
+
+--@return { cash: number, bank: number, dirty: number|nil }
+Bridge.Framework.getMoney = function()
+    local player = exports['ND_Core']:getPlayer()
+    return { cash = player and player.cash or 0, bank = player and player.bank or 0, dirty = nil }
+end
+
+--@return { name: string, label: string, grade: number, gradeLabel: string, salary: number, onDuty: boolean }
+Bridge.Framework.getJobInfo = function()
+    local player = exports['ND_Core']:getPlayer()
+    local job = Bridge.Framework.fetchPlayerJob()
+    return {
+        name = job.name,
+        label = job.label or job.name,
+        grade = tonumber(job.grade) or 0,
+        gradeLabel = player and player.jobInfo?.rankName or '',
+        salary = 0,
+        onDuty = true,
+    }
+end
+
+--@return { [string]: number } [0 - 100 per status, e.g. hunger, thirst, stress]
+Bridge.Framework.getStatus = function()
+    return {}
+end
+
+RegisterNetEvent('ND:characterUnloaded', function()
+    TriggerEvent('p_bridge/client/playerUnloaded')
+end)
+
+
+-- Multicharacter: nothing to announce on this framework.
+--@param isNew: boolean [first spawn of a new character]
+Bridge.Framework.playerSpawned = function(isNew)
+end
+
+Bridge.Framework.name = 'nd'

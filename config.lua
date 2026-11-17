@@ -149,6 +149,7 @@ Config.Dispatch = 'auto'
     glxs-dispatch - Galaxis Studios Dispatch
     oxide-dispatch - Oxide Studios Dispatch
     apex_mdt - Apex Scripts MDT Dispatch
+    nn_dispatch - Nano Scripts Dispatch
 
     -- open ticket on our discord if you want to add your dispatch system [discord.gg/piotreqscripts]
 ]]
