@@ -64,6 +64,21 @@ local function getPlayerData()
     return QBCore.PlayerData or {}
 end
 
+RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function()
+    local timeout = GetGameTimer() + 10000
+    while not LocalPlayer.state.isLoggedIn and GetGameTimer() < timeout do
+        Citizen.Wait(100)
+    end
+    Citizen.Wait(1000)
+
+    local playerData = getPlayerData()
+    syncDeadState(playerData)
+    if Config.Debug then
+        lib.print.info(('[Framework] Player loaded, sent player data (job: %s)'):format(tostring(playerData.job?.name)))
+    end
+    TriggerEvent('p_bridge/client/setPlayerData', playerData)
+end)
+
 Bridge.Framework = {}
 
 --@return boolean [true if player is loaded, false otherwise]
